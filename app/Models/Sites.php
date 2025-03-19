@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Sites extends Model
+{
+    /** @use HasFactory<\Database\Factories\SitesFactory> */
+protected $fillable = ["name","phonenumber","isTrash"];
+    use HasFactory;
+
+    public function onsites()
+    {
+        return $this->hasMany(Onsites::class);
+    }
+
+    public function damages()
+    {
+        return $this->hasMany(Damages::class);
+    }
+}
