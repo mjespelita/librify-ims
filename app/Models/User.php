@@ -75,4 +75,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Damages::class);
     }
+
+    public function sites()
+    {
+        return $this->hasMany(Sites::class);
+    }
 }

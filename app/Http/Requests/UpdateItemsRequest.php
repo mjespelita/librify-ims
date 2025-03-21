@@ -23,7 +23,14 @@ class UpdateItemsRequest extends FormRequest
     {
         return [
             //
-'name' => 'required','model' => 'required','brand' => 'required','types_id' => 'required','description' => 'required','unit' => 'required',
+'name' => 'required',
+'model' => 'required',
+'brand' => 'required',
+'types_id' => 'required',
+'description' => 'required',
+'quantity' => 'required',
+'serial_numbers' => '',
+'unit' => 'required',
         ];
     }
 }

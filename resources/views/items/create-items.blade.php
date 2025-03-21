@@ -10,63 +10,84 @@
                 <div class='card-body'>
                     <form action='{{ route('items.store') }}' method='POST'>
                         @csrf
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="serialNumberToggle">
+                            <label class="form-check-label" for="serialNumberToggle" id="serialNumberLabel">No Serial Number</label>
+                        </div>
+        
+                        <!-- Tag input field and button -->
+                        <div class="input-group mb-3 serialNumberCustomToggle" style="display: none">
+                            <input type="text" class="form-control" id="tagInput" placeholder="Enter a serial number">
+                            <button class="btn btn-outline-secondary" type="button" id="addTagBtn">Add Serial Number</button>
+                        </div>
+
+                        <!-- Hidden input field where tags are stored (separated by commas) -->
+                        <div class="form-group mb-3">
+                            <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden>
+                        </div>
+        
+                        <!-- Display the tags -->
+                        <div id="tagContainer" class="mb-3">
+                            <!-- Tags will appear here -->
+                        </div>
             
-                <div class='form-group'>
-                    <label for='name'>Name</label>
-                    <input type='text' class='form-control' id='name' name='name' required>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Model</label>
-                    <input type='text' class='form-control' id='model' name='model' required>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Brand</label>
-                    <input type='text' class='form-control' id='brand' name='brand' required>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Type</label>
-                    <select name="types_id" class="form-control" id="">
-                        @forelse ($types as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @empty
-                            <option value="0" disabled>No Types Available</option>
-                        @endforelse
-                    </select>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Description</label>
-                    <textarea name="description" class="form-control" id="" cols="30" rows="10" required></textarea>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Initial Quantity</label>
-                    <input type='number' class='form-control' id='quantity' name='quantity' required>
-                </div>
-            
-                <div class='form-group'>
-                    <label for='name'>Unit</label>
-                    <select name="unit" class="form-control" id="">
-                        <option value="pcs">Pieces</option> <!-- For individual items, routers, APs, etc. -->
-                        <option value="meters">Meters</option> <!-- For cables (fiber optic, Ethernet) -->
-                        <option value="ft">Feet</option> <!-- For cables (fiber optic, Ethernet) -->
-                        <option value="kg">Kilograms</option> <!-- For equipment weight, like routers or switches -->
-                        <option value="lbs">Pounds</option> <!-- For equipment weight, like routers or switches -->
-                        <option value="amps">Amperes</option> <!-- For power consumption of devices like routers or switches -->
-                        <option value="watt">Watts</option> <!-- For power consumption of network devices -->
-                        <option value="dbm">dBm</option> <!-- For signal strength of wireless devices (APs, antennas) -->
-                        <option value="MHz">MHz</option> <!-- For frequency of wireless equipment (routers, antennas) -->
-                        <option value="GHz">GHz</option> <!-- For wireless frequency, e.g., Wi-Fi routers -->
-                        <option value="slots">Slots</option> <!-- For network devices that support slots for additional modules -->
-                        <option value="ports">Ports</option> <!-- For tracking the number of ports on devices like switches and routers -->
-                        <option value="cm">Centimeters</option> <!-- For small connectors or components (e.g., cable connectors) -->
-                        <option value="lbs">Pounds</option> <!-- For item weight like routers or large hardware -->
-                        <option value="units">Units</option> <!-- For specific types of items being tracked (e.g., routers, switches) -->
-                    </select>
-                </div>
+                        <div class='form-group'>
+                            <label for='name'>Name</label>
+                            <input type='text' class='form-control' id='name' name='name' required>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Model</label>
+                            <input type='text' class='form-control' id='model' name='model' required>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Brand</label>
+                            <input type='text' class='form-control' id='brand' name='brand' required>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Type</label>
+                            <select name="types_id" class="form-control" id="">
+                                @forelse ($types as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @empty
+                                    <option value="0" disabled>No Types Available</option>
+                                @endforelse
+                            </select>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Description</label>
+                            <textarea name="description" class="form-control" id="" cols="30" rows="10" required></textarea>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Initial Quantity</label>
+                            <input type='number' class='form-control' id='quantity' name='quantity' required>
+                        </div>
+                    
+                        <div class='form-group'>
+                            <label for='name'>Unit</label>
+                            <select name="unit" class="form-control" id="">
+                                <option value="pcs">Pieces</option> <!-- For individual items, routers, APs, etc. -->
+                                <option value="meters">Meters</option> <!-- For cables (fiber optic, Ethernet) -->
+                                <option value="ft">Feet</option> <!-- For cables (fiber optic, Ethernet) -->
+                                <option value="kg">Kilograms</option> <!-- For equipment weight, like routers or switches -->
+                                <option value="lbs">Pounds</option> <!-- For equipment weight, like routers or switches -->
+                                <option value="amps">Amperes</option> <!-- For power consumption of devices like routers or switches -->
+                                <option value="watt">Watts</option> <!-- For power consumption of network devices -->
+                                <option value="dbm">dBm</option> <!-- For signal strength of wireless devices (APs, antennas) -->
+                                <option value="MHz">MHz</option> <!-- For frequency of wireless equipment (routers, antennas) -->
+                                <option value="GHz">GHz</option> <!-- For wireless frequency, e.g., Wi-Fi routers -->
+                                <option value="slots">Slots</option> <!-- For network devices that support slots for additional modules -->
+                                <option value="ports">Ports</option> <!-- For tracking the number of ports on devices like switches and routers -->
+                                <option value="cm">Centimeters</option> <!-- For small connectors or components (e.g., cable connectors) -->
+                                <option value="lbs">Pounds</option> <!-- For item weight like routers or large hardware -->
+                                <option value="units">Units</option> <!-- For specific types of items being tracked (e.g., routers, switches) -->
+                            </select>
+                        </div>
             
                         <button type='submit' class='btn btn-primary mt-3'>Create</button>
                     </form>

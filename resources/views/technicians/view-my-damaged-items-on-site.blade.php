@@ -7,8 +7,8 @@
             <h1>My Damaged Items</h1>
         </div>
         <div class='col-lg-6 col-md-6 col-sm-12' style='text-align: right;'>
-            {{-- <a href='{{ url('trash-damages') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\damages::where('isTrash', '1')->count() }}</span></button></a>
-            <a href='{{ route('damages.create') }}'><button class='btn btn-success'><i class='fas fa-plus'></i> Add damages</button></a> --}}
+            <a href='{{ url('trash-damages') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\damages::where('isTrash', '1')->count() }}</span></button></a>
+            <a href='{{ route('damages.create') }}'><button class='btn btn-success'><i class='fas fa-plus'></i> Add damages</button></a>
         </div>
     </div>
 
@@ -30,9 +30,9 @@
                                 <tr>
                                     <td><a class="nav-link {{ request()->is('my-damaged-items/*') ? 'fw-bold text-success' : '' }}" href="{{ url('/my-damaged-items/'.Auth::user()->id) }}">All</a></td>
                                 </tr>
-                                @forelse(App\Models\Sites::all() as $_site)
+                                @forelse(App\Models\Sites::where('users_id', Auth::user()->id)->get() as $site)
                                     <tr class="selectTechnicianSearchBarResult">
-                                        <td class='{{ request()->is('view-my-damaged-items-on-site/'.$_site->id) ? 'fw-bold text-success' : '' }}'><a class="nav-link" href="{{ url('/view-my-damaged-items-on-site/'.$_site->id) }}">{{ $_site->name }}</a></td>
+                                        <td class='{{ request()->is('view-my-damaged-items-on-site/'.$site->id) ? 'fw-bold text-success' : '' }}'><a class="nav-link" href="{{ url('/view-my-damaged-items-on-site/'.$site->id) }}">{{ $site->name }}</a></td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -51,7 +51,7 @@
 
                     <h5>From {{ $site->name }}</h5>
 
-                    {{-- <div class='row'>
+                    <div class='row'>
                         <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                             <div class='row'>
                                 <div class='col-4'>
@@ -67,7 +67,7 @@
                                         </a>
                                     </div>
                                 </div>
-                                <div class='col-8'>
+                                {{-- <div class='col-8'>
                                     <form action='{{ url('/damages-paginate') }}' method='get'>
                                         <div class='input-group'>
                                             <input type='number' name='paginate' class='form-control' placeholder='Paginate' value='{{ request()->get('paginate', 10) }}'>
@@ -77,10 +77,10 @@
                                         </div>
                                         @csrf
                                     </form>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
-                        <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
+                        {{-- <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                             <form action='{{ url('/damages-filter') }}' method='get'>
                                 <div class='input-group'>
                                     <input type='date' class='form-control' id='from' name='from' required> 
@@ -103,8 +103,8 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
-                    </div> --}}
+                        </div> --}}
+                    </div>
         
                     <div class='table-responsive'>
                         <table class='table table-striped'>
@@ -115,6 +115,7 @@
                                     </th>
                                     <th>Item ID</th>
                                     <th>Item</th>
+                                    <th>Serial #</th>
                                     <th>Item Type</th>
                                     <th>Technician</th>
                                     <th>Site</th>
@@ -132,6 +133,15 @@
                                         </th>
                                         <td><b>{{ $item->items->itemId ?? "no data" }}</b></td>
                                         <td>{{ $item->items->name ?? "no data" }}</td>
+                                        <td>
+                                            @if($item->serial_numbers)
+                                                @foreach(explode(',', $item->serial_numbers) as $serial_number)
+                                                    <span class="custom-badge">{{ trim($serial_number) }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+                                        </td>
                                         <td><b class="text-success">{{ $item->types->name ?? "no data" }}</b></td>
                                         <td>{{ $item->technicians->name ?? "no data" }}</td>
                                         <td>{{ $item->sites->name ?? "no data" }}</td>

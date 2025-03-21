@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
 $table->string('name');
 $table->string('phonenumber');
+$table->string('google_map_link');
+$table->integer('users_id');
 $table->boolean('isTrash')->default(0);
             $table->timestamps();
         });

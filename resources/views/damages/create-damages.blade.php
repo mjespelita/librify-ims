@@ -21,28 +21,88 @@
                         @endforelse
                     </select>
                 </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="serialNumberToggle">
+                    <label class="form-check-label" for="serialNumberToggle" id="serialNumberLabel">No Serial Number</label>
+                </div>
+
+                <!-- Tag input field and button -->
+                <div class="input-group mb-3 serialNumberCustomToggle" style="display: none">
+                    <input type="text" class="form-control" id="tagInput" placeholder="Enter a serial number">
+                    <button class="btn btn-outline-secondary" type="button" id="addTagBtn">Add Serial Number</button>
+                </div>
+
+                <!-- Optional Dropdown for Searchable Serial Numbers -->
+                <ul id="serialDropdown" class="dropdown-menu" style="max-height: 200px; overflow-y: auto; display: none;">
+                    <!-- Options will be populated dynamically via JS -->
+                </ul>
+
+                <!-- Display the tags -->
+                <div id="tagContainer" class="mb-3">
+                    <!-- Tags will appear here -->
+                </div>
+
+                <!-- Hidden input field where tags are stored (separated by commas) -->
+                <div class="form-group mb-3">
+                    <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden>
+                </div>
             
-                <div class='form-group'>
-                    <label for='name'>Select Technician</label>
-                    <select name="technicians_id" class="form-control" id="">
-                        @forelse ($technicians as $technician)
-                            <option value="{{ $technician->id }}">{{ $technician->name }}</option>
-                        @empty
-                            <option value="0">No record</option>
-                        @endforelse
-                    </select>
-                </div>
-        
-                <div class='form-group'>
-                    <label for='name'>Select A Site</label>
-                    <select name="sites_id" class="form-control" id="">
-                        @forelse ($sites as $site)
-                            <option value="{{ $site->id }}">{{ $site->name }}</option>
-                        @empty
-                            <option value="0">No record</option>
-                        @endforelse
-                    </select>
-                </div>
+                {{-- if authenticated user is an admin --}}
+            
+                @if (Auth::user()->role === 'admin')
+                    <div class='form-group mb-3'>
+                        <label for='name'>Select Technician</label>
+                        <select name="technicians_id" class="form-control" id="">
+                            @forelse ($technicians as $technician)
+                                <option value="{{ $technician->id }}">{{ $technician->name }}</option>
+                            @empty
+                                <option value="0">No record</option>
+                            @endforelse
+                        </select>
+                    </div>
+                @endif
+
+                {{-- if authenticated user is a technician --}}
+
+                @if (Auth::user()->role === 'technician')
+                    <div class='form-group mb-3'>
+                        <label for='name'>Technician (You)</label>
+                        <select name="technicians_id" class="form-control" id="">
+                            <option value="{{ Auth::user()->id }}">{{ Auth::user()->name }}</option>
+                        </select>
+                    </div>
+                @endif
+
+                {{-- if authenticated user is an admin --}}
+            
+                @if (Auth::user()->role === 'admin')
+                    <div class='form-group mb-3'>
+                        <label for='name'>Select A Site</label>
+                        <select name="sites_id" class="form-control" id="">
+                            @forelse ($sites as $site)
+                                <option value="{{ $site->id }}">{{ $site->name }}</option>
+                            @empty
+                                <option value="0">No record</option>
+                            @endforelse
+                        </select>
+                    </div>
+                @endif
+
+                {{-- if authenticated user is a technician --}}
+
+                @if (Auth::user()->role === 'technician')
+                    <div class='form-group mb-3'>
+                        <label for='name'>Select Your Site</label>
+                        <select name="sites_id" class="form-control" id="">
+                            @forelse (App\Models\Sites::where('users_id', Auth::user()->id)->get() as $site)
+                                <option value="{{ $site->id }}">{{ $site->name }}</option>
+                            @empty
+                                <option value="0">No record</option>
+                            @endforelse
+                        </select>
+                    </div>
+                @endif
             
                 <div class='form-group'>
                     <label for='name'>Quantity</label>

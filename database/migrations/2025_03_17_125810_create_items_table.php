@@ -20,6 +20,7 @@ $table->string('brand');
 $table->string('types_id');
 $table->longtext('description');
 $table->string('quantity');
+$table->string('serial_numbers')->nullable();
 $table->string('unit');
 $table->boolean('isTrash')->default(0);
             $table->timestamps();

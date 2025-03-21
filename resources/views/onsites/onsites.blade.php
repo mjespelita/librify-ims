@@ -105,6 +105,10 @@
                             </form>
                         </div>
                     </div>
+
+                    <style>
+                        
+                    </style>
         
                     <div class='table-responsive'>
                         <table class='table table-striped'>
@@ -115,6 +119,7 @@
                                     </th>
                                     <th>Item ID</th>
                                     <th>Item</th>
+                                    <th>Serial Numbers</th>
                                     <th>Item Type</th>
                                     <th>Technician</th>
                                     <th>Site</th>
@@ -132,6 +137,15 @@
                                         </th>
                                         <td><b>{{ $item->items->itemId ?? "no data" }}</b></td>
                                         <td>{{ $item->items->name ?? "no data" }}</td>
+                                        <td>
+                                            @if($item->serial_numbers)
+                                                @foreach(explode(',', $item->serial_numbers) as $serial_number)
+                                                    <span class="custom-badge">{{ trim($serial_number) }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+                                        </td>
                                         <td><b class="text-success">{{ $item->types->name ?? "no data" }}</b></td>
                                         <td>{{ $item->technicians->name ?? "no data" }}</td>
                                         <td>{{ $item->sites->name ?? "no data" }}</td>

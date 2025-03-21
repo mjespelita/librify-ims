@@ -27,6 +27,7 @@ class UpdateDamagesRequest extends FormRequest
 'technicians_id' => 'required',
 'sites_id' => 'required',
 'quantity' => 'required',
+'serial_numbers' => '',
         ];
     }
 }

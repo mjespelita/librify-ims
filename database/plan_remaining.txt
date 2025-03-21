@@ -9,3 +9,42 @@ ok - nawakay
 dashboard of technician
 login design
 welcome page
+
+Sites
+ok name
+ok phonenumber
+ok google maps cooordinate
+
+ok - when click site, maimod kun mga nanu na items
+
+ok - items details, mag add sin serial number - optional
+
+ok maka add site ang technician
+
+ok maka add damages ang technician
+
+ok - google maps coordinates - iframe
+
+ok - what is the most requested items
+
+ok - stat of most installed items
+
+search through serial numbers
+
+description of damages
+
+if admin mag add
+
+dashboard graph fix
+
+
+page that has serial number
+
+/create-items
+edit-items/* - remove only
+
+/create-onsites
+edit-onsites/2 - remove and add
+
+/create-damages
+edit-damages/2 - remove and add

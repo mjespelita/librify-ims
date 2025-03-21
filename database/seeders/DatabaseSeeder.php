@@ -65,55 +65,74 @@ class DatabaseSeeder extends Seeder
         // Create multiple sites with a valid phone number
         Sites::create([
             'name' => 'Allen Central Elementary School',
-            'phonenumber' => $faker->numerify('09#########') // Generates a phone number with '09' followed by 9 digits
+            'phonenumber' => $faker->numerify('09#########'), // Generates a phone number with '09' followed by 9 digits
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Greenwood High School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Riverdale Middle School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Sunnybrook Academy',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Maplewood Primary School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w' ,// Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Blue Ridge International School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Westlake High School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Oak Ridge College',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Pinecrest Secondary School',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
+        
         Sites::create([
             'name' => 'Cedar Valley Institute',
-            'phonenumber' => $faker->numerify('09#########')
+            'phonenumber' => $faker->numerify('09#########'),
+            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+            'users_id' => 1
         ]);
-
-
+        
         // Items
 
         // Fetch all Types (these are already seeded)

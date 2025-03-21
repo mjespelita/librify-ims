@@ -81,7 +81,8 @@ class OnsitesController extends Controller {
             'items_types_id' => Items::where('id', $request->items_id)->value('types_id'),
             'technicians_id' => $request->technicians_id,
             'sites_id' => $request->sites_id,
-            'quantity' => $request->quantity
+            'quantity' => $request->quantity,
+            'serial_numbers' => $request->serial_numbers
         ]);
 
         // increase the count
@@ -140,6 +141,7 @@ class OnsitesController extends Controller {
             'technicians_id' => $request->technicians_id,
             'quantity' => $request->quantity,
             'sites_id' => $request->sites_id,
+            'serial_numbers' => $request->serial_numbers
         ]);
 
         return back()->with('success', 'Onsites Updated Successfully!');
@@ -168,7 +170,11 @@ class OnsitesController extends Controller {
 
         Onsites::where('id', $onsitesId)->update(['isTrash' => '1']);
 
-        return redirect('/onsites');
+        if (Auth::user()->role === 'technician') {
+            return redirect('/my-onsite-items/'.Auth::user()->id);
+        } else {
+            return redirect('/onsites');
+        }
     }
 
     public function bulkDelete(Request $request) {

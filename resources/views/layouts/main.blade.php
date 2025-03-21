@@ -29,7 +29,7 @@
                     <b>Inventory Management System</b>
                 </div>
             </div>
-            <a href='{{ url('dashboard') }}' class='{{ request()->is('dashboard', 'admin-dashboard') ? 'active' : '' }}'>
+            <a href='{{ url('dashboard') }}' class='{{ request()->is('dashboard', 'admin-dashboard', 'technician-dashboard') ? 'active' : '' }}'>
                 <i class='fas fa-tachometer-alt'></i> Dashboard
             </a>
             
@@ -68,14 +68,18 @@
             @endif
 
             @if (Auth::user()->role === 'technician')
-                <a href='{{ url('my-onsite-items/'.Auth::user()->id) }}' class='{{ request()->is('my-onsite-items/*', 'view-my-onsite-items-on-site/*', 'trash-my-onsite-items', 'create-my-onsite-items', 'show-my-onsite-items/*', 'edit-my-onsite-items/*', 'delete-my-onsite-items/*', 'my-onsite-items-search*') ? 'active' : '' }}'>
+                <a href='{{ url('my-onsite-items/'.Auth::user()->id) }}' class='{{ request()->is('my-onsite-items/*', 'view-onsite-items-on-site/*', 'trash-onsites', 'create-my-onsite-items', 'show-my-onsite-items/*', 'edit-my-onsite-items/*', 'delete-my-onsite-items/*', 'my-onsite-items-search*') ? 'active' : '' }}'>
                     <i class='fas fa-house'></i> My On Site Items
                 </a>
 
                 <a href='{{ url('my-damaged-items/'.Auth::user()->id) }}' class='{{ request()->is('my-damaged-items/*', 'view-my-damaged-items-on-site/*', 'trash-damages', 'create-damages', 'show-damages/*', 'edit-damages/*', 'delete-damages/*', 'damages-search*') ? 'active' : '' }}'>
                     <i class='fas fa-exclamation-triangle'></i> My Damaged Items
                 </a>
-            @endif
+
+                <a href='{{ url('my-sites') }}' class='{{ request()->is('my-sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-house'></i> My Sites
+                </a>
+            @endif  
             
             <a href='{{ url('user/profile') }}'><i class='fas fa-user'></i> {{ Auth::user()->name }}</a>
         </div>

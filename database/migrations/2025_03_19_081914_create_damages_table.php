@@ -18,6 +18,7 @@ $table->integer('items_types_id');
 $table->integer('technicians_id');
 $table->integer('sites_id');
 $table->integer('quantity');
+$table->string('serial_numbers')->nullable();
 $table->boolean('isTrash')->default(0);
             $table->timestamps();
         });

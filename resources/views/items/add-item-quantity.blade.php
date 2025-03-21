@@ -11,16 +11,56 @@
                 <div class='card-body'>
                     <form action='{{ url('add-item-quantity-process/'.$item->id) }}' method='POST'>
                         @csrf
+
+                        @if ($item->serial_numbers != "")
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="serialNumberToggle">
+                                <label class="form-check-label" for="serialNumberToggle" id="serialNumberLabel">No Serial Number</label>
+                            </div>
+            
+                            <!-- Tag input field and button -->
+                            <div class="input-group mb-3 serialNumberCustomToggle" style="display: none">
+                                <input type="text" class="form-control" id="tagInput" placeholder="Enter a serial number">
+                                <button class="btn btn-outline-secondary" type="button" id="addTagBtn">Add Serial Number</button>
+                            </div>
+
+                            <!-- Hidden input field where tags are stored (separated by commas) -->
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden>
+                            </div>
+
+                            <!-- Optional Dropdown for Searchable Serial Numbers -->
+                            <ul id="serialDropdown" class="dropdown-menu" style="max-height: 200px; overflow-y: auto; display: none;">
+                                <!-- Options will be populated dynamically via JS -->
+                            </ul>
+            
+                            <!-- Display the tags -->
+                            <div id="tagContainer" class="mb-3">
+                                <!-- Tags will appear here -->
+                            </div>
                     
-                        <div class='form-group'>
-                            <label for='name'>Number</label>
-                            <input type='number' class='form-control' id='quantity' name='quantity' required>
-                        </div>
-                        <div class='form-group'>
-                            <label for='name'>Reason</label>
-                            <textarea name="reason" class="form-control" id="" cols="30" rows="10" required></textarea>
-                        </div>
-                        <button type='submit' class='btn btn-primary mt-3'>Submit</button>
+                            <div class='form-group'>
+                                <input type='number' class='form-control' id='quantity' name='quantity' required hidden>
+                            </div>
+
+                            <div class='form-group'>
+                                <label for='name'>Reason</label>
+                                <textarea name="reason" class="form-control" id="" cols="30" rows="10" required></textarea>
+                            </div>
+                            <button type='submit' class='btn btn-primary mt-3'>Submit</button>
+                        @else
+                            <div class='form-group'>
+                                <label for='name'>Number</label>
+                                <input type='number' class='form-control' id='quantity' name='quantity' required>
+                            </div>
+
+                            <div class='form-group'>
+                                <label for='name'>Reason</label>
+                                <textarea name="reason" class="form-control" id="" cols="30" rows="10" required></textarea>
+                            </div>
+
+                            <button type='submit' class='btn btn-primary mt-3'>Submit</button>
+                        @endif
                     </form>
                 </div>
             </div>

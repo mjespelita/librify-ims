@@ -51,7 +51,12 @@ class SitesController extends Controller {
      */
     public function store(StoreSitesRequest $request)
     {
-        Sites::create(['name' => $request->name,'phonenumber' => $request->phonenumber]);
+        Sites::create([
+            'name' => $request->name,
+            'phonenumber' => $request->phonenumber,
+            'google_map_link' => $request->google_map_link,
+            'users_id' => Auth::user()->id,
+        ]);
 
         /* Log ************************************************** */
         Logs::create(['log' => Auth::user()->name.' created a new sites '.'"'.$request->name.'"']);
@@ -90,7 +95,11 @@ class SitesController extends Controller {
         Logs::create(['log' => Auth::user()->name.' updated a sites from "'.$oldName.'" to "'.$request->name.'".']);
         /******************************************************** */
 
-        Sites::where('id', $sitesId)->update(['name' => $request->name,'phonenumber' => $request->phonenumber]);
+        Sites::where('id', $sitesId)->update([
+            'name' => $request->name,
+            'phonenumber' => $request->phonenumber,
+            'google_map_link' => $request->google_map_link,
+        ]);
 
         return back()->with('success', 'Sites Updated Successfully!');
     }

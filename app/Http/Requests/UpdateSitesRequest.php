@@ -23,7 +23,9 @@ class UpdateSitesRequest extends FormRequest
     {
         return [
             //
-'name' => 'required','phonenumber' => 'required|max:11',
+'name' => 'required',
+'phonenumber' => 'required|max:11',
+'google_map_link' => 'required',
         ];
     }
 }

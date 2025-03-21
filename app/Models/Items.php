@@ -16,6 +16,7 @@ protected $fillable = [
     "types_id",
     "description",
     "quantity",
+    "serial_numbers",
     "unit",
     "isTrash"];
     use HasFactory;

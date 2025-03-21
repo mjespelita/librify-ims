@@ -82,7 +82,8 @@ class DamagesController extends Controller {
             'items_types_id' => Items::where('id', $request->items_id)->value('types_id'),
             'technicians_id' => $request->technicians_id,
             'sites_id' => $request->sites_id,
-            'quantity' => $request->quantity
+            'quantity' => $request->quantity,
+            'serial_numbers' => $request->serial_numbers
         ]);
 
         // increase the count
@@ -141,6 +142,7 @@ class DamagesController extends Controller {
             'technicians_id' => $request->technicians_id,
             'quantity' => $request->quantity,
             'sites_id' => $request->sites_id,
+            'serial_numbers' => $request->serial_numbers
         ]);
 
         return back()->with('success', 'Damages Updated Successfully!');
@@ -169,7 +171,11 @@ class DamagesController extends Controller {
 
         Damages::where('id', $damagesId)->update(['isTrash' => '1']);
 
-        return redirect('/damages');
+        if (Auth::user()->role === 'technician') {
+            return redirect('/my-damaged-items/'.Auth::user()->id);
+        } else {
+            return redirect('/damages');
+        }
     }
 
     public function bulkDelete(Request $request) {

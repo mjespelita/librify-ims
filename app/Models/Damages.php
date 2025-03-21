@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Damages extends Model
 {
     /** @use HasFactory<\Database\Factories\DamagesFactory> */
-protected $fillable = ["items_id","items_types_id","technicians_id","sites_id","quantity","isTrash"];
+protected $fillable = ["items_id","items_types_id","technicians_id","sites_id","quantity", "serial_numbers", "isTrash"];
     use HasFactory;
 
     public function items()

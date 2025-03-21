@@ -4,7 +4,7 @@
 @section('content')
     <div class='row'>
         <div class='col-lg-6 col-md-6 col-sm-12'>
-            <h1>All Sites</h1>
+            <h1>My Sites</h1>
         </div>
         <div class='col-lg-6 col-md-6 col-sm-12' style='text-align: right;'>
             <a href='{{ url('trash-sites') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\Sites::where('isTrash', '1')->count() }}</span></button></a>

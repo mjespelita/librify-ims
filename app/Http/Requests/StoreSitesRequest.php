@@ -23,7 +23,16 @@ class StoreSitesRequest extends FormRequest
     {
         return [
             //
-'name' => 'required','phonenumber' => 'required|max:11',
+            'name' => 'required',
+            'phonenumber' => 'required|max:11',
+            'google_map_link' => 'required',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'google_map_link.required' => 'The site is required. Please search for a site first.',
         ];
     }
 }

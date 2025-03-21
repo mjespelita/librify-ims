@@ -48,4 +48,11 @@ class RandomController extends Controller
             'site' => Sites::find($siteId)
         ]);
     }
+
+    public function mySites()
+    {
+        return view('technicians.my-sites', [
+            'sites' => Sites::where('users_id', Auth::user()->id)->paginate(10)
+        ]);
+    }
 }

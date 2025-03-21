@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Sites extends Model
 {
     /** @use HasFactory<\Database\Factories\SitesFactory> */
-protected $fillable = ["name","phonenumber","isTrash"];
+protected $fillable = ["name","phonenumber", "google_map_link", "users_id", "isTrash"];
     use HasFactory;
 
     public function onsites()
@@ -19,5 +19,10 @@ protected $fillable = ["name","phonenumber","isTrash"];
     public function damages()
     {
         return $this->hasMany(Damages::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsTo(User::class);
     }
 }

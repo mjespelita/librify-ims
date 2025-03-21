@@ -60,6 +60,19 @@
                                 <th>Unit</th>
                                 <td>{{ $item->unit }}</td>
                             </tr>
+
+                            <tr>
+                                <th>Serial Numbers</th>
+                                <td>
+                                    @if($item->serial_numbers)
+                                        @foreach(explode(',', $item->serial_numbers) as $serial_number)
+                                            <span class="custom-badge">{{ trim($serial_number) }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="custom-badge no-serial">no serial numbers</span>
+                                    @endif
+                                </td>
+                            </tr>
             
                             <tr>
                                 <th>Created At</th>
@@ -102,6 +115,7 @@
                                 <tr>
                                     <th>Item ID</th>
                                     <th>Type</th>
+                                    <th>Serial #</th>
                                     <th>Technician</th>
                                     <th>Site</th>
                                     <th>Qty.</th>
@@ -114,6 +128,15 @@
                                     <tr>
                                         <td><b>{{ $_item->items->itemId ?? "no data" }}</b></td>
                                         <td><b class="text-success">{{ $_item->types->name ?? "no data" }}</b></td>
+                                        <td>
+                                            @if($_item->serial_numbers)
+                                                @foreach(explode(',', $_item->serial_numbers) as $serial_number)
+                                                    <span class="custom-badge">{{ trim($serial_number) }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $_item->technicians->name ?? "no data" }}</td>
                                         <td>{{ $_item->sites->name ?? "no data" }}</td>
                                         <td>{{ $_item->quantity }}</td>

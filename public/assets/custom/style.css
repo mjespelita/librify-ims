@@ -24,7 +24,7 @@ body {
     url("https://db.onlinewebfonts.com/t/a81c6ef023e90fb9f87ac017d242a337.svg#Montserrat")format("svg");
 }
 
-h1,h2,h3,h4,h5,h6,p,a,span,td{
+h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
     font-family: Poppins !important;
 }
 
@@ -151,6 +151,21 @@ h1,h2,h3,h4,h5,h6,p,a,span,td{
 .card-title {
     font-size: 20px;
     font-weight: 600;
+}
+
+.custom-badge {
+    display: inline-block;
+    background-color: #F48D1F;
+    color: #fff;
+    padding: 5px 10px;
+    margin: 3px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.custom-badge.no-serial {
+    background-color: #6c757d;
 }
 
 /* .table>:not(caption)>*>* {

@@ -86,6 +86,7 @@ Route::middleware([
     Route::get('/view-my-onsite-items-on-site/{siteId}', [RandomController::class, 'viewMyOnsiteItemsOnSite']);
     Route::get('/my-damaged-items/{userId}', [RandomController::class, 'myDamagedItems']);
     Route::get('/view-my-damaged-items-on-site/{siteId}', [RandomController::class, 'viewMyDamagedItemsOnSite']);
+    Route::get('/my-sites', [RandomController::class, 'mySites']);
 
     // API
 
@@ -95,6 +96,75 @@ Route::middleware([
             'onSitesCount' => Onsites::sum('quantity'),
             'damagesCount' => Damages::sum('quantity'),
         ]);
+    });
+
+    Route::get('/get-item-data-for-stats', function () {
+        $onsiteItems = Onsites::all();
+        $damagedItems = Damages::all();
+        $final = [];
+        $onsiteArray = [];
+        $damagesArray = [];
+
+        foreach ($onsiteItems as $key => $onsite) {
+            $itemId = $onsite->items->id ?? "";
+            $itemName = $onsite->items->name ?? "";
+            $count = $onsite['quantity'];
+
+            array_push($onsiteArray, [
+                'id' => $itemId,
+                'name' => $itemName,
+                'count' => $count,
+            ]);
+        }
+
+        array_push($final, [
+            'onsites' => $onsiteArray
+        ]);
+
+        foreach ($damagedItems as $key => $damaged) {
+            $itemId = $onsite->items->id ?? "";
+            $itemName = $damaged->items->name ?? "";
+            $count = $damaged['quantity'];
+
+            array_push($damagesArray, [
+                'id' => $itemId,
+                'name' => $itemName,
+                'count' => $count,
+            ]);
+        }
+
+        array_push($final, [
+            'damages' => $damagesArray
+        ]);
+
+        return response()->json([
+            'final' => $final
+        ]);
+    });
+
+    Route::get('/get-item-serial-numbers', function () {
+        // Fetch all items from the Items model
+    $allItems = Items::all();
+
+    // Initialize an empty array to store all serial numbers
+    $serial_numbers = [];
+
+    // Loop through each item to get the serial numbers
+    foreach ($allItems as $item) {
+        // Split the serial numbers string by commas and clean up the whitespace
+        $itemSerialNumbers = explode(',', $item->serial_numbers);
+        
+        // Merge the item serial numbers into the main array, trimming each item to remove extra spaces
+        $serial_numbers = array_merge($serial_numbers, array_map('trim', $itemSerialNumbers));
+    }
+
+    // Remove duplicate serial numbers (optional)
+    $serial_numbers = array_unique($serial_numbers);
+
+    // Return the serial numbers as an array (not an object)
+    return response()->json([
+        'serial_numbers' => array_values($serial_numbers), // Ensure it's an indexed array
+    ], 200); // Optionally specify the status code
     });
 
     // end...
@@ -349,19 +419,19 @@ Route::middleware([
 
     // end...
 
-    Route::get('/sites', [SitesController::class, 'index'])->name('sites.index')->middleware(AdminMiddleware::class);
-    Route::get('/create-sites', [SitesController::class, 'create'])->name('sites.create')->middleware(AdminMiddleware::class);
-    Route::get('/edit-sites/{sitesId}', [SitesController::class, 'edit'])->name('sites.edit')->middleware(AdminMiddleware::class);
-    Route::get('/show-sites/{sitesId}', [SitesController::class, 'show'])->name('sites.show')->middleware(AdminMiddleware::class);
-    Route::get('/delete-sites/{sitesId}', [SitesController::class, 'delete'])->name('sites.delete')->middleware(AdminMiddleware::class);
-    Route::get('/destroy-sites/{sitesId}', [SitesController::class, 'destroy'])->name('sites.destroy')->middleware(AdminMiddleware::class);
-    Route::post('/store-sites', [SitesController::class, 'store'])->name('sites.store')->middleware(AdminMiddleware::class);
-    Route::post('/update-sites/{sitesId}', [SitesController::class, 'update'])->name('sites.update')->middleware(AdminMiddleware::class);
-    Route::post('/sites-delete-all-bulk-data', [SitesController::class, 'bulkDelete'])->middleware(AdminMiddleware::class);
-    Route::post('/sites-move-to-trash-all-bulk-data', [SitesController::class, 'bulkMoveToTrash'])->middleware(AdminMiddleware::class);
-    Route::post('/sites-restore-all-bulk-data', [SitesController::class, 'bulkRestore'])->middleware(AdminMiddleware::class);
-    Route::get('/trash-sites', [SitesController::class, 'trash'])->middleware(AdminMiddleware::class);
-    Route::get('/restore-sites/{sitesId}', [SitesController::class, 'restore'])->name('sites.restore')->middleware(AdminMiddleware::class);
+    Route::get('/sites', [SitesController::class, 'index'])->name('sites.index');
+    Route::get('/create-sites', [SitesController::class, 'create'])->name('sites.create');
+    Route::get('/edit-sites/{sitesId}', [SitesController::class, 'edit'])->name('sites.edit');
+    Route::get('/show-sites/{sitesId}', [SitesController::class, 'show'])->name('sites.show');
+    Route::get('/delete-sites/{sitesId}', [SitesController::class, 'delete'])->name('sites.delete');
+    Route::get('/destroy-sites/{sitesId}', [SitesController::class, 'destroy'])->name('sites.destroy');
+    Route::post('/store-sites', [SitesController::class, 'store'])->name('sites.store');
+    Route::post('/update-sites/{sitesId}', [SitesController::class, 'update'])->name('sites.update');
+    Route::post('/sites-delete-all-bulk-data', [SitesController::class, 'bulkDelete']);
+    Route::post('/sites-move-to-trash-all-bulk-data', [SitesController::class, 'bulkMoveToTrash']);
+    Route::post('/sites-restore-all-bulk-data', [SitesController::class, 'bulkRestore']);
+    Route::get('/trash-sites', [SitesController::class, 'trash']);
+    Route::get('/restore-sites/{sitesId}', [SitesController::class, 'restore'])->name('sites.restore');
 
     // Sites Search
     Route::get('/sites-search', function (Request $request) {
@@ -604,19 +674,19 @@ Route::middleware([
 
     // end...
 
-    Route::get('/onsites', [OnsitesController::class, 'index'])->name('onsites.index')->middleware(AdminMiddleware::class);
-    Route::get('/create-onsites', [OnsitesController::class, 'create'])->name('onsites.create')->middleware(AdminMiddleware::class);
-    Route::get('/edit-onsites/{onsitesId}', [OnsitesController::class, 'edit'])->name('onsites.edit')->middleware(AdminMiddleware::class);
-    Route::get('/show-onsites/{onsitesId}', [OnsitesController::class, 'show'])->name('onsites.show')->middleware(AdminMiddleware::class);
-    Route::get('/delete-onsites/{onsitesId}', [OnsitesController::class, 'delete'])->name('onsites.delete')->middleware(AdminMiddleware::class);
-    Route::get('/destroy-onsites/{onsitesId}', [OnsitesController::class, 'destroy'])->name('onsites.destroy')->middleware(AdminMiddleware::class);
-    Route::post('/store-onsites', [OnsitesController::class, 'store'])->name('onsites.store')->middleware(AdminMiddleware::class);
-    Route::post('/update-onsites/{onsitesId}', [OnsitesController::class, 'update'])->name('onsites.update')->middleware(AdminMiddleware::class);
-    Route::post('/onsites-delete-all-bulk-data', [OnsitesController::class, 'bulkDelete'])->middleware(AdminMiddleware::class);
-    Route::post('/onsites-move-to-trash-all-bulk-data', [OnsitesController::class, 'bulkMoveToTrash'])->middleware(AdminMiddleware::class);
-    Route::post('/onsites-restore-all-bulk-data', [OnsitesController::class, 'bulkRestore'])->middleware(AdminMiddleware::class);
-    Route::get('/trash-onsites', [OnsitesController::class, 'trash'])->middleware(AdminMiddleware::class);
-    Route::get('/restore-onsites/{onsitesId}', [OnsitesController::class, 'restore'])->name('onsites.restore')->middleware(AdminMiddleware::class);
+    Route::get('/onsites', [OnsitesController::class, 'index'])->name('onsites.index');
+    Route::get('/create-onsites', [OnsitesController::class, 'create'])->name('onsites.create');
+    Route::get('/edit-onsites/{onsitesId}', [OnsitesController::class, 'edit'])->name('onsites.edit');
+    Route::get('/show-onsites/{onsitesId}', [OnsitesController::class, 'show'])->name('onsites.show');
+    Route::get('/delete-onsites/{onsitesId}', [OnsitesController::class, 'delete'])->name('onsites.delete');
+    Route::get('/destroy-onsites/{onsitesId}', [OnsitesController::class, 'destroy'])->name('onsites.destroy');
+    Route::post('/store-onsites', [OnsitesController::class, 'store'])->name('onsites.store');
+    Route::post('/update-onsites/{onsitesId}', [OnsitesController::class, 'update'])->name('onsites.update');
+    Route::post('/onsites-delete-all-bulk-data', [OnsitesController::class, 'bulkDelete']);
+    Route::post('/onsites-move-to-trash-all-bulk-data', [OnsitesController::class, 'bulkMoveToTrash']);
+    Route::post('/onsites-restore-all-bulk-data', [OnsitesController::class, 'bulkRestore']);
+    Route::get('/trash-onsites', [OnsitesController::class, 'trash']);
+    Route::get('/restore-onsites/{onsitesId}', [OnsitesController::class, 'restore'])->name('onsites.restore');
 
     // Onsites Search
     Route::get('/onsites-search', function (Request $request) {
@@ -689,19 +759,19 @@ Route::middleware([
 
     // end...
 
-    Route::get('/damages', [DamagesController::class, 'index'])->name('damages.index')->middleware(AdminMiddleware::class);
-    Route::get('/create-damages', [DamagesController::class, 'create'])->name('damages.create')->middleware(AdminMiddleware::class);
-    Route::get('/edit-damages/{damagesId}', [DamagesController::class, 'edit'])->name('damages.edit')->middleware(AdminMiddleware::class);
-    Route::get('/show-damages/{damagesId}', [DamagesController::class, 'show'])->name('damages.show')->middleware(AdminMiddleware::class);
-    Route::get('/delete-damages/{damagesId}', [DamagesController::class, 'delete'])->name('damages.delete')->middleware(AdminMiddleware::class);
-    Route::get('/destroy-damages/{damagesId}', [DamagesController::class, 'destroy'])->name('damages.destroy')->middleware(AdminMiddleware::class);
-    Route::post('/store-damages', [DamagesController::class, 'store'])->name('damages.store')->middleware(AdminMiddleware::class);
-    Route::post('/update-damages/{damagesId}', [DamagesController::class, 'update'])->name('damages.update')->middleware(AdminMiddleware::class);
-    Route::post('/damages-delete-all-bulk-data', [DamagesController::class, 'bulkDelete'])->middleware(AdminMiddleware::class);
-    Route::post('/damages-move-to-trash-all-bulk-data', [DamagesController::class, 'bulkMoveToTrash'])->middleware(AdminMiddleware::class);
-    Route::post('/damages-restore-all-bulk-data', [DamagesController::class, 'bulkRestore'])->middleware(AdminMiddleware::class);
-    Route::get('/trash-damages', [DamagesController::class, 'trash'])->middleware(AdminMiddleware::class);
-    Route::get('/restore-damages/{damagesId}', [DamagesController::class, 'restore'])->name('damages.restore')->middleware(AdminMiddleware::class);
+    Route::get('/damages', [DamagesController::class, 'index'])->name('damages.index');
+    Route::get('/create-damages', [DamagesController::class, 'create'])->name('damages.create');
+    Route::get('/edit-damages/{damagesId}', [DamagesController::class, 'edit'])->name('damages.edit');
+    Route::get('/show-damages/{damagesId}', [DamagesController::class, 'show'])->name('damages.show');
+    Route::get('/delete-damages/{damagesId}', [DamagesController::class, 'delete'])->name('damages.delete');
+    Route::get('/destroy-damages/{damagesId}', [DamagesController::class, 'destroy'])->name('damages.destroy');
+    Route::post('/store-damages', [DamagesController::class, 'store'])->name('damages.store');
+    Route::post('/update-damages/{damagesId}', [DamagesController::class, 'update'])->name('damages.update');
+    Route::post('/damages-delete-all-bulk-data', [DamagesController::class, 'bulkDelete']);
+    Route::post('/damages-move-to-trash-all-bulk-data', [DamagesController::class, 'bulkMoveToTrash']);
+    Route::post('/damages-restore-all-bulk-data', [DamagesController::class, 'bulkRestore']);
+    Route::get('/trash-damages', [DamagesController::class, 'trash']);
+    Route::get('/restore-damages/{damagesId}', [DamagesController::class, 'restore'])->name('damages.restore');
 
     // Damages Search
     Route::get('/damages-search', function (Request $request) {

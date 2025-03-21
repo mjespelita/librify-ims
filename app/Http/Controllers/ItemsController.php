@@ -31,7 +31,17 @@ class ItemsController extends Controller {
         $request->validate([
             'quantity' => 'required',
             'reason' => 'required',
+            'serial_numbers' => '',
         ]);
+
+        // if items has serial numbers
+
+        if ($request->serial_numbers != "") {
+            $currentSerialNumbers = Items::where('id', $itemId)->value('serial_numbers');
+            Items::where('id', $itemId)->update([
+                'serial_numbers' => $currentSerialNumbers.', '.$request->serial_numbers
+            ]);
+        }
 
         // increase or descrease quantity
 
@@ -121,6 +131,7 @@ class ItemsController extends Controller {
             'types_id' => $request->types_id,
             'description' => $request->description,
             'quantity' => $request->quantity,
+            'serial_numbers' => $request->serial_numbers,
             'unit' => $request->unit,
         ]);
 
@@ -168,6 +179,8 @@ class ItemsController extends Controller {
             'brand' => $request->brand,
             'types_id' => $request->types_id,
             'description' => $request->description,
+            'quantity' => $request->quantity,
+            'serial_numbers' => $request->serial_numbers,
             'unit' => $request->unit,
         ]);
 
