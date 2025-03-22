@@ -136,10 +136,10 @@
                                         <td>
                                             @if($site->serial_numbers)
                                                 @foreach(explode(',', $site->serial_numbers) as $serial_number)
-                                                    <span class="custom-badge">{{ trim($serial_number) }}</span>
+                                                    <span class="custom-badge-in-damage">{{ trim($serial_number) }}</span>
                                                 @endforeach
                                             @else
-                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                                <span class="custom-badge-in-damage no-serial">no serial numbers</span>
                                             @endif
                                         </td>
                                         <td><b class="text-success">{{ $site->types->name ?? "no data" }}</b></td>
@@ -172,6 +172,7 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Date and Time</th>
                                 </tr>
                             </thead>
         
@@ -180,6 +181,7 @@
                                     <tr>
                                         <td><b>{{ $site->users->name ?? "no data" }} ({{ $site->users->role ?? "no data" }})</b></td>
                                         <td>{{ $site->users->email ?? "no data" }}</td>
+                                        <td>{{ $site->created_at }}</td>
                                     </tr>
                                 @empty
                                     <tr>

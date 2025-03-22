@@ -147,7 +147,7 @@ $(document).ready(function () {
     // Function to update the iframe src with the searched place
     function updateMapSearch(query) {
         const baseURL = "https://www.google.com/maps/embed/v1/place?q=";
-        const apiKey = "AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w"; // Replace with your Google Maps API Key
+        const apiKey = "AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8weeeeeeeeeeeeeeeeeeeeeeeeeee"; // Replace with your Google Maps API Key
         const newURL = `${baseURL}${encodeURIComponent(query)}&key=${apiKey}`;
         mapIframe.src = newURL;
 

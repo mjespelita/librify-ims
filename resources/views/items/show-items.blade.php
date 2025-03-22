@@ -48,17 +48,101 @@
 
                             <tr>
                                 <th>In Warehouse Qty.</th>
-                                <td><b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') - App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') - App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b>
+                                        </div>
+                                        <div class="col-9">
+                                            @if($item->serial_numbers)
+                                                @php
+                                                    // Get all serial numbers from the Damages model using pluck for better performance
+                                                    $damagedSerialNumbers = App\Models\Damages::pluck('serial_numbers')->toArray();
+                                                    $damagedSerialNumbers = array_map(function($serial_numbers) {
+                                                        return array_map('trim', explode(',', $serial_numbers));
+                                                    }, $damagedSerialNumbers);
+                                                    $damagedSerialNumbers = array_merge(...$damagedSerialNumbers);
+                                                    
+                                                    // Get all serial numbers from the Onsites model using pluck for better performance
+                                                    $onsiteSerialNumbers = App\Models\Onsites::pluck('serial_numbers')->toArray();
+                                                    $onsiteSerialNumbers = array_map(function($serial_numbers) {
+                                                        return array_map('trim', explode(',', $serial_numbers));
+                                                    }, $onsiteSerialNumbers);
+                                                    $onsiteSerialNumbers = array_merge(...$onsiteSerialNumbers);
+
+                                                    // Merge both damaged and onsite serial numbers and remove duplicates
+                                                    $allExcludedSerialNumbers = array_merge($damagedSerialNumbers, $onsiteSerialNumbers);
+                                                    $allExcludedSerialNumbers = array_map('trim', $allExcludedSerialNumbers); // Clean up extra spaces
+                                                    $allExcludedSerialNumbers = array_unique($allExcludedSerialNumbers); // Remove duplicates
+                                                @endphp
+                                                
+                                                @foreach(explode(',', $item->serial_numbers) as $serial_number)
+                                                    @php
+                                                        $serial_number = trim($serial_number);
+                                                    @endphp
+                                                    @if(!in_array($serial_number, $allExcludedSerialNumbers)) <!-- Check if the serial number is not in the damages or onsite list -->
+                                                        <span class="custom-badge-in-warehouse">{{ $serial_number }}</span>
+                                                    @endif
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                             
                             <tr>
                                 <th>On-Site Qty.</th>
-                                <td><b class="text-primary">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <b class="text-primary">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b>
+                                        </div>
+                                        <div class="col-9">
+                                            @if($item->serial_numbers)
+                                                @foreach(App\Models\Onsites::where('items_id', $item->id)->get() as $_item)
+                                                    @foreach(explode(',', $_item->serial_numbers) as $serial_number)
+                                                        <span class="custom-badge-in-onsite">
+                                                            <a class="text-light text-decoration-none fw-bold" href="{{ url('/show-sites/'.$_item->sites_id) }}">
+                                                                {{ $serial_number }}
+                                                            </a>
+                                                        </span>
+                                                    @endforeach
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
 
                             <tr>
                                 <th>Damaged Qty.</th>
-                                <td><b class="text-danger">{{ App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <b class="text-danger">{{ App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b>
+                                        </div>
+                                        <div class="col-9">
+                                            @if($item->serial_numbers)
+                                                @foreach(App\Models\Damages::where('items_id', $item->id)->get() as $_item)
+                                                    @foreach(explode(',', $_item->serial_numbers) as $serial_number)
+                                                        <span class="custom-badge-in-damage">
+                                                            <a class="text-light text-decoration-none fw-bold" href="{{ url('/show-sites/'.$_item->sites_id) }}">
+                                                                {{ $serial_number }}
+                                                            </a>
+                                                        </span>
+                                                    @endforeach
+                                                @endforeach
+                                            @else
+                                                <span class="custom-badge no-serial">no serial numbers</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         
                             <tr>
@@ -66,7 +150,7 @@
                                 <td>{{ $item->unit }}</td>
                             </tr>
 
-                            <tr>
+                            {{-- <tr>
                                 <th>Serial Numbers</th>
                                 <td>
                                     @if($item->serial_numbers)
@@ -77,7 +161,7 @@
                                         <span class="custom-badge no-serial">no serial numbers</span>
                                     @endif
                                 </td>
-                            </tr>
+                            </tr> --}}
             
                             <tr>
                                 <th>Created At</th>
@@ -143,7 +227,11 @@
                                             @endif
                                         </td>
                                         <td>{{ $_item->technicians->name ?? "no data" }}</td>
-                                        <td>{{ $_item->sites->name ?? "no data" }}</td>
+                                        <td>
+                                            <a class="fw-bold text-primary text-decoration-none" href="{{ url('/show-sites/'.$_item->sites->id) }}">
+                                                {{ $_item->sites->name ?? "no data" }}
+                                            </a>
+                                        </td>
                                         <td>{{ $_item->quantity }}</td>
                                         <td>{{ $_item->items->unit ?? "no data" }}</td>
                                     </tr>

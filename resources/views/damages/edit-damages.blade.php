@@ -51,7 +51,7 @@
 
                 <!-- Hidden input field where tags are stored (separated by commas) -->
                 <div class="form-group mb-3">
-                    <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden>
+                    <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden value="{{ $item->serial_numbers }}">
                 </div>
             
                 {{-- if authenticated user is an admin --}}
