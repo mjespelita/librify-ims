@@ -25,4 +25,9 @@ protected $fillable = ["name","phonenumber", "google_map_link", "users_id", "isT
     {
         return $this->belongsTo(User::class);
     }
+
+    public function deployedTechnicians()
+    {
+        return $this->hasMany(Deployedtechnicians::class);
+    }
 }

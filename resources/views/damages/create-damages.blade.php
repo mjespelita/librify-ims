@@ -76,7 +76,7 @@
 
                 {{-- if authenticated user is an admin --}}
             
-                @if (Auth::user()->role === 'admin')
+                {{-- @if (Auth::user()->role === 'admin') --}}
                     <div class='form-group mb-3'>
                         <label for='name'>Select A Site</label>
                         <select name="sites_id" class="form-control" id="">
@@ -87,11 +87,11 @@
                             @endforelse
                         </select>
                     </div>
-                @endif
+                {{-- @endif --}}
 
                 {{-- if authenticated user is a technician --}}
 
-                @if (Auth::user()->role === 'technician')
+                {{-- @if (Auth::user()->role === 'technician')
                     <div class='form-group mb-3'>
                         <label for='name'>Select Your Site</label>
                         <select name="sites_id" class="form-control" id="">
@@ -102,7 +102,7 @@
                             @endforelse
                         </select>
                     </div>
-                @endif
+                @endif --}}
             
                 <div class='form-group'>
                     <label for='name'>Quantity</label>

@@ -80,4 +80,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Sites::class);
     }
+
+    public function deployedTechnicians()
+    {
+        return $this->hasMany(Deployedtechnicians::class);
+    }
 }

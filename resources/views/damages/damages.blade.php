@@ -97,7 +97,7 @@
                             <!-- Search Form -->
                             <form action='{{ url('/damages-search') }}' method='GET'>
                                 <div class='input-group'>
-                                    <input type='text' name='search' value='{{ request()->get('search') }}' class='form-control' placeholder='Search...'>
+                                    <input type='text' name='search' value='{{ request()->get('search') }}' class='form-control' placeholder='Search Site...'>
                                     <div class='input-group-append'>
                                         <button class='btn btn-success' type='submit'><i class='fa fa-search'></i></button>
                                     </div>
@@ -121,6 +121,9 @@
                                     <th>From Site</th>
                                     <th>Quantity</th>
                                     <th>Unit</th>
+                                    <th>Last Modified By</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -144,9 +147,18 @@
                                         </td>
                                         <td><b class="text-success">{{ $item->types->name ?? "no data" }}</b></td>
                                         <td>{{ $item->technicians->name ?? "no data" }}</td>
-                                        <td>{{ $item->sites->name ?? "no data" }}</td>
+                                        <td>
+                                            <a class="text-primary fw-bold text-decoration-none" href="{{ url('/show-sites/'.$item->sites->id) }}">
+                                                {{ $item->sites->name ?? "no data" }}
+                                            </a>
+                                        </td>
                                         <td><b class="text-danger">{{ $item->quantity }}</b></td>
                                         <td>{{ $item->items->unit ?? "no data" }}</td>
+                                        <td>
+                                            {{ App\Models\User::where('id', $item->updated_by)->value('name') ?? "no name" }} ({{ App\Models\User::where('id', $item->updated_by)->value('role') ?? "no role" }})
+                                        </td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}</td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->updated_at) }}</td>
                                         <td>
                                             {{-- <a href='{{ route('damages.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a> --}}
                                             <a href='{{ route('damages.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a>

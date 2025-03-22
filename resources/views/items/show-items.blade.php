@@ -48,12 +48,17 @@
 
                             <tr>
                                 <th>In Warehouse Qty.</th>
-                                <td><b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                                <td><b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') - App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b></td>
                             </tr>
                             
                             <tr>
                                 <th>On-Site Qty.</th>
-                                <td><b class="text-danger">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                                <td><b class="text-primary">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b></td>
+                            </tr>
+
+                            <tr>
+                                <th>Damaged Qty.</th>
+                                <td><b class="text-danger">{{ App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b></td>
                             </tr>
                         
                             <tr>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Damages, Items, Sites, User};
+use App\Models\{Logs, Damages, Deployedtechnicians, Items, Sites, User};
 use App\Http\Requests\StoreDamagesRequest;
 use App\Http\Requests\UpdateDamagesRequest;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ class DamagesController extends Controller {
     public function index()
     {
         return view('damages.damages', [
-            'damages' => Damages::where('isTrash', '0')->paginate(10)
+            'damages' => Damages::where('isTrash', '0')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 
@@ -83,8 +83,18 @@ class DamagesController extends Controller {
             'technicians_id' => $request->technicians_id,
             'sites_id' => $request->sites_id,
             'quantity' => $request->quantity,
-            'serial_numbers' => $request->serial_numbers
+            'serial_numbers' => $request->serial_numbers,
+            'updated_by' => Auth::user()->id
         ]);
+
+        // check if already deployed technicians
+
+        Deployedtechnicians::firstOrCreate(
+            [
+                'sites_id' => $request->sites_id,
+                'technicians_id' => $request->technicians_id,
+            ]
+        );
 
         // increase the count
 
@@ -142,8 +152,18 @@ class DamagesController extends Controller {
             'technicians_id' => $request->technicians_id,
             'quantity' => $request->quantity,
             'sites_id' => $request->sites_id,
-            'serial_numbers' => $request->serial_numbers
+            'serial_numbers' => $request->serial_numbers,
+            'updated_by' => Auth::user()->id
         ]);
+
+        // check if already deployed technicians
+
+        Deployedtechnicians::firstOrCreate(
+            [
+                'sites_id' => $request->sites_id,
+                'technicians_id' => $request->technicians_id,
+            ]
+        );
 
         return back()->with('success', 'Damages Updated Successfully!');
     }

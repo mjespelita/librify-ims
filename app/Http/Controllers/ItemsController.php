@@ -15,7 +15,7 @@ class ItemsController extends Controller {
     public function index()
     {
         return view('items.items', [
-            'items' => Items::where('isTrash', '0')->paginate(10)
+            'items' => Items::where('isTrash', '0')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 

@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('onsites', function (Blueprint $table) {
+        Schema::create('deployedtechnicians', function (Blueprint $table) {
             $table->id();
-$table->integer('items_id');
-$table->integer('items_types_id');
-$table->integer('technicians_id');
 $table->integer('sites_id');
-$table->integer('quantity');
-$table->string('serial_numbers')->nullable();
-$table->integer('updated_by');
+$table->integer('technicians_id');
 $table->boolean('isTrash')->default(0);
             $table->timestamps();
         });
@@ -30,6 +25,6 @@ $table->boolean('isTrash')->default(0);
      */
     public function down(): void
     {
-        Schema::dropIfExists('onsites');
+        Schema::dropIfExists('deployedtechnicians');
     }
 };

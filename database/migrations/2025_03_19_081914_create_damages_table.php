@@ -19,6 +19,7 @@ $table->integer('technicians_id');
 $table->integer('sites_id');
 $table->integer('quantity');
 $table->string('serial_numbers')->nullable();
+$table->integer('updated_by');
 $table->boolean('isTrash')->default(0);
             $table->timestamps();
         });

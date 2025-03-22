@@ -15,7 +15,7 @@ class TypesController extends Controller {
     public function index()
     {
         return view('types.types', [
-            'types' => Types::where('isTrash', '0')->paginate(10)
+            'types' => Types::where('isTrash', '0')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 

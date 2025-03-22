@@ -30,7 +30,8 @@
                                 <tr>
                                     <td><a class="nav-link {{ request()->is('my-damaged-items/*') ? 'fw-bold text-success' : '' }}" href="{{ url('/my-damaged-items/'.Auth::user()->id) }}">All</a></td>
                                 </tr>
-                                @forelse(App\Models\Sites::where('users_id', Auth::user()->id)->get() as $site)
+                                {{-- @forelse(App\Models\Sites::where('users_id', Auth::user()->id)->get() as $site) --}}
+                                @forelse(App\Models\Sites::all() as $site)
                                     <tr class="selectTechnicianSearchBarResult">
                                         <td class='{{ request()->is('view-my-damaged-items-on-site/'.$site->id) ? 'fw-bold text-success' : '' }}'><a class="nav-link" href="{{ url('/view-my-damaged-items-on-site/'.$site->id) }}">{{ $site->name }}</a></td>
                                     </tr>
@@ -67,7 +68,7 @@
                                         </a>
                                     </div>
                                 </div>
-                                {{-- <div class='col-8'>
+                                <div class='col-8'>
                                     <form action='{{ url('/damages-paginate') }}' method='get'>
                                         <div class='input-group'>
                                             <input type='number' name='paginate' class='form-control' placeholder='Paginate' value='{{ request()->get('paginate', 10) }}'>
@@ -77,10 +78,10 @@
                                         </div>
                                         @csrf
                                     </form>
-                                </div> --}}
+                                </div>
                             </div>
                         </div>
-                        {{-- <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
+                        <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                             <form action='{{ url('/damages-filter') }}' method='get'>
                                 <div class='input-group'>
                                     <input type='date' class='form-control' id='from' name='from' required> 
@@ -103,7 +104,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div> --}}
+                        </div>
                     </div>
         
                     <div class='table-responsive'>
@@ -121,6 +122,9 @@
                                     <th>Site</th>
                                     <th>Quantity</th>
                                     <th>Unit</th>
+                                    <th>Last Modified By</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -144,9 +148,18 @@
                                         </td>
                                         <td><b class="text-success">{{ $item->types->name ?? "no data" }}</b></td>
                                         <td>{{ $item->technicians->name ?? "no data" }}</td>
-                                        <td>{{ $item->sites->name ?? "no data" }}</td>
+                                        <td>
+                                            <a class="text-primary fw-bold text-decoration-none" href="{{ url('/show-sites/'.$item->sites->id) }}">
+                                                {{ $item->sites->name ?? "no data" }}
+                                            </a>
+                                        </td>
                                         <td><b class="text-danger">{{ $item->quantity }}</b></td>
                                         <td>{{ $item->items->unit ?? "no data" }}</td>
+                                        <td>
+                                            {{ App\Models\User::where('id', $item->updated_by)->value('name') ?? "no name" }} ({{ App\Models\User::where('id', $item->updated_by)->value('role') ?? "no role" }})
+                                        </td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}</td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->updated_at) }}</td>
                                         <td>
                                             {{-- <a href='{{ route('damages.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a> --}}
                                             <a href='{{ route('damages.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a>

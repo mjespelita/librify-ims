@@ -15,7 +15,7 @@ class SitesController extends Controller {
     public function index()
     {
         return view('sites.sites', [
-            'sites' => Sites::where('isTrash', '0')->paginate(10)
+            'sites' => Sites::where('isTrash', '0')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 

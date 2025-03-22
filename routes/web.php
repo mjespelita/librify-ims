@@ -51,6 +51,12 @@ use App\Models\Damages;
 
 // end of import
 
+use App\Http\Controllers\DeployedtechniciansController;
+use App\Models\Deployedtechnicians;
+
+// end of import
+
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -144,28 +150,52 @@ Route::middleware([
 
     Route::get('/get-item-serial-numbers', function () {
         // Fetch all items from the Items model
-    $allItems = Items::all();
-
-    // Initialize an empty array to store all serial numbers
-    $serial_numbers = [];
-
-    // Loop through each item to get the serial numbers
-    foreach ($allItems as $item) {
-        // Split the serial numbers string by commas and clean up the whitespace
-        $itemSerialNumbers = explode(',', $item->serial_numbers);
-        
-        // Merge the item serial numbers into the main array, trimming each item to remove extra spaces
-        $serial_numbers = array_merge($serial_numbers, array_map('trim', $itemSerialNumbers));
-    }
-
-    // Remove duplicate serial numbers (optional)
-    $serial_numbers = array_unique($serial_numbers);
-
-    // Return the serial numbers as an array (not an object)
-    return response()->json([
-        'serial_numbers' => array_values($serial_numbers), // Ensure it's an indexed array
-    ], 200); // Optionally specify the status code
+        $allItems = Items::all();
+    
+        // Fetch the serial numbers from onsites and damages tables
+        $onsites = Onsites::pluck('serial_numbers')->toArray();
+        $damages = Damages::pluck('serial_numbers')->toArray();
+    
+        // Initialize an array to hold all serial numbers from onsites and damages
+        $excludedSerialNumbers = [];
+    
+        // Loop through each record in onsites and damages to extract the serial numbers
+        foreach ($onsites as $onsite) {
+            // Split the serial numbers string by commas and clean up the whitespace
+            $excludedSerialNumbers = array_merge($excludedSerialNumbers, array_map('trim', explode(',', $onsite)));
+        }
+    
+        foreach ($damages as $damage) {
+            // Split the serial numbers string by commas and clean up the whitespace
+            $excludedSerialNumbers = array_merge($excludedSerialNumbers, array_map('trim', explode(',', $damage)));
+        }
+    
+        // Remove duplicate serial numbers (optional)
+        $excludedSerialNumbers = array_unique($excludedSerialNumbers);
+    
+        // Initialize an array to store serial numbers from allItems that are not in excludedSerialNumbers
+        $validSerialNumbers = [];
+    
+        // Loop through each item in allItems and check if its serial numbers are not in the excluded list
+        foreach ($allItems as $item) {
+            // Split the serial numbers string by commas and clean up the whitespace
+            $itemSerialNumbers = explode(',', $item->serial_numbers);
+    
+            // Filter the serial numbers to include only those not in the excludedSerialNumbers array
+            $validSerialNumbers = array_merge($validSerialNumbers, array_filter($itemSerialNumbers, function ($serialNumber) use ($excludedSerialNumbers) {
+                return !in_array(trim($serialNumber), $excludedSerialNumbers);
+            }));
+        }
+    
+        // Remove duplicate serial numbers
+        $validSerialNumbers = array_unique($validSerialNumbers);
+    
+        // Return the serial numbers as an array (not an object)
+        return response()->json([
+            'serial_numbers' => array_values($validSerialNumbers), // Ensure it's an indexed array
+        ], 200); // Optionally specify the status code
     });
+    
 
     // end...
 
@@ -694,7 +724,7 @@ Route::middleware([
 
         // Perform the search logic
         $onsites = Onsites::when($search, function ($query) use ($search) {
-            return $query->whereHas('items', function ($query) use ($search) {
+            return $query->whereHas('sites', function ($query) use ($search) {
                 $query->where('name', 'like', "%$search%");
             });
         })->paginate(10);
@@ -779,7 +809,9 @@ Route::middleware([
 
         // Perform the search logic
         $damages = Damages::when($search, function ($query) use ($search) {
-            return $query->where('name', 'like', "%$search%");
+            return $query->whereHas('sites', function ($query) use ($search) {
+                $query->where('name', 'like', "%$search%");
+            });
         })->paginate(10);
 
         return view('damages.damages', compact('damages', 'search'));
@@ -838,6 +870,89 @@ Route::middleware([
     
         // Return the view with damages and the selected date range
         return view('damages.damages', compact('damages', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/deployedtechnicians', [DeployedtechniciansController::class, 'index'])->name('deployedtechnicians.index');
+    Route::get('/create-deployedtechnicians', [DeployedtechniciansController::class, 'create'])->name('deployedtechnicians.create');
+    Route::get('/edit-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'edit'])->name('deployedtechnicians.edit');
+    Route::get('/show-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'show'])->name('deployedtechnicians.show');
+    Route::get('/delete-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'delete'])->name('deployedtechnicians.delete');
+    Route::get('/destroy-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'destroy'])->name('deployedtechnicians.destroy');
+    Route::post('/store-deployedtechnicians', [DeployedtechniciansController::class, 'store'])->name('deployedtechnicians.store');
+    Route::post('/update-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'update'])->name('deployedtechnicians.update');
+    Route::post('/deployedtechnicians-delete-all-bulk-data', [DeployedtechniciansController::class, 'bulkDelete']);
+    Route::post('/deployedtechnicians-move-to-trash-all-bulk-data', [DeployedtechniciansController::class, 'bulkMoveToTrash']);
+    Route::post('/deployedtechnicians-restore-all-bulk-data', [DeployedtechniciansController::class, 'bulkRestore']);
+    Route::get('/trash-deployedtechnicians', [DeployedtechniciansController::class, 'trash']);
+    Route::get('/restore-deployedtechnicians/{deployedtechniciansId}', [DeployedtechniciansController::class, 'restore'])->name('deployedtechnicians.restore');
+
+    // Deployedtechnicians Search
+    Route::get('/deployedtechnicians-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $deployedtechnicians = Deployedtechnicians::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('deployedtechnicians.deployedtechnicians', compact('deployedtechnicians', 'search'));
+    });
+
+    // Deployedtechnicians Paginate
+    Route::get('/deployedtechnicians-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the deployedtechnicians based on the 'paginate' value
+        $deployedtechnicians = Deployedtechnicians::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated deployedtechnicians
+        return view('deployedtechnicians.deployedtechnicians', compact('deployedtechnicians'));
+    });
+
+    // Deployedtechnicians Filter
+    Route::get('/deployedtechnicians-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for deployedtechnicians
+        $query = Deployedtechnicians::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $deployedtechnicians = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $deployedtechnicians = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $deployedtechnicians = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all deployedtechnicians without filtering
+            $deployedtechnicians = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with deployedtechnicians and the selected date range
+        return view('deployedtechnicians.deployedtechnicians', compact('deployedtechnicians', 'from', 'to'));
     });
 
     // end...

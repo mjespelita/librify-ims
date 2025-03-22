@@ -7,7 +7,7 @@
         <div class="col-lg-6 col-md-6 col-sm-12">
             <div class="card">
                 <div class="card-body">
-                    <h5>Most Frequently Used Items</h5>
+                    <h5>In used Items</h5>
                     <div id="barChartOnsite"></div>
                 </div>
             </div>
@@ -15,7 +15,7 @@
         <div class="col-lg-6 col-md-6 col-sm-12">
             <div class="card">
                 <div class="card-body">
-                    <h5>Most Damaged Items</h5>
+                    <h5>Damaged Items</h5>
                     <div id="barChartDamages"></div>
                 </div>
             </div>

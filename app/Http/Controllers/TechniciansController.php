@@ -16,7 +16,7 @@ class TechniciansController extends Controller {
     public function index()
     {
         return view('technicians.technicians', [
-            'technicians' => User::whereNot('role', 'admin')->paginate(10)
+            'technicians' => User::whereNot('role', 'admin')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 

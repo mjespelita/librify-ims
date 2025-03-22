@@ -105,7 +105,7 @@ $(document).ready(function () {
         var barChartOnsiteOptions = {
             chart: {
                 type: 'bar',
-                height: 200
+                height: 300
             },
             colors: ['#35A9DA'],
             series: [{
@@ -124,7 +124,7 @@ $(document).ready(function () {
         var barChartDamagesOptions = {
             chart: {
                 type: 'bar',
-                height: 200
+                height: 300
             },
             colors: ['#FF1654'],
             series: [{

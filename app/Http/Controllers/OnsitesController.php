@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Items, Logs, Onsites, Sites, Technicians, Types, User};
+use App\Models\{Deployedtechnicians, Items, Logs, Onsites, Sites, Technicians, Types, User};
 use App\Http\Requests\StoreOnsitesRequest;
 use App\Http\Requests\UpdateOnsitesRequest;
 use Illuminate\Http\Request;
@@ -74,16 +74,26 @@ class OnsitesController extends Controller {
 
         if ($request->quantity > $remainingQuantity) {
             return back()->with('error', 'Quantity must not exceed from warehouse quantity!');
-        }
+        } else {
+            $onsite = Onsites::create([
+                'items_id' => $request->items_id,
+                'items_types_id' => Items::where('id', $request->items_id)->value('types_id'),
+                'technicians_id' => $request->technicians_id,
+                'sites_id' => $request->sites_id,
+                'quantity' => $request->quantity,
+                'serial_numbers' => $request->serial_numbers,
+                'updated_by' => Auth::user()->id
+            ]);
 
-        $onsite = Onsites::create([
-            'items_id' => $request->items_id,
-            'items_types_id' => Items::where('id', $request->items_id)->value('types_id'),
-            'technicians_id' => $request->technicians_id,
-            'sites_id' => $request->sites_id,
-            'quantity' => $request->quantity,
-            'serial_numbers' => $request->serial_numbers
-        ]);
+            // check if already deployed technicians
+
+            Deployedtechnicians::firstOrCreate(
+                [
+                    'sites_id' => $request->sites_id,
+                    'technicians_id' => $request->technicians_id,
+                ]
+            );
+        }
 
         // increase the count
 
@@ -141,8 +151,18 @@ class OnsitesController extends Controller {
             'technicians_id' => $request->technicians_id,
             'quantity' => $request->quantity,
             'sites_id' => $request->sites_id,
-            'serial_numbers' => $request->serial_numbers
+            'serial_numbers' => $request->serial_numbers,
+            'updated_by' => Auth::user()->id
         ]);
+
+        // check if already deployed technicians
+
+        Deployedtechnicians::firstOrCreate(
+            [
+                'sites_id' => $request->sites_id,
+                'technicians_id' => $request->technicians_id,
+            ]
+        );
 
         return back()->with('success', 'Onsites Updated Successfully!');
     }

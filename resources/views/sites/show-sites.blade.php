@@ -67,6 +67,9 @@
                                     <th>Technician</th>
                                     <th>Quantity</th>
                                     <th>Unit</th>
+                                    <th>Last Modified By</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
                                 </tr>
                             </thead>
         
@@ -88,6 +91,11 @@
                                         <td>{{ $site->technicians->name ?? "no data" }}</td>
                                         <td><b class="text-primary">{{ $site->quantity }}</b></td>
                                         <td>{{ $site->items->unit ?? "no data" }}</td>
+                                        <td>
+                                            {{ App\Models\User::where('id', $site->updated_by)->value('name') ?? "no name" }} ({{ App\Models\User::where('id', $site->updated_by)->value('role') ?? "no role" }})
+                                        </td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->created_at) }}</td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->updated_at) }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -114,6 +122,9 @@
                                     <th>Technician</th>
                                     <th>Quantity</th>
                                     <th>Unit</th>
+                                    <th>Last Modified By</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
                                 </tr>
                             </thead>
         
@@ -135,6 +146,40 @@
                                         <td>{{ $site->technicians->name ?? "no data" }}</td>
                                         <td><b class="text-danger">{{ $site->quantity }}</b></td>
                                         <td>{{ $site->items->unit ?? "no data" }}</td>
+                                        <td>
+                                            {{ App\Models\User::where('id', $site->updated_by)->value('name') ?? "no name" }} ({{ App\Models\User::where('id', $site->updated_by)->value('role') ?? "no role" }})
+                                        </td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->created_at) }}</td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->updated_at) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td>No Record...</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary">Technicians deployed to this Site</h5>
+                    <div class='table-responsive'>
+                        <table class='table table-striped'>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+        
+                            <tbody>
+                                @forelse(App\Models\Deployedtechnicians::where('sites_id', $item->id)->get() as $site)
+                                    <tr>
+                                        <td><b>{{ $site->users->name ?? "no data" }} ({{ $site->users->role ?? "no data" }})</b></td>
+                                        <td>{{ $site->users->email ?? "no data" }}</td>
                                     </tr>
                                 @empty
                                     <tr>

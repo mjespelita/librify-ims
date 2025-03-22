@@ -20,7 +20,7 @@
 
                 <!-- Hidden input field where tags are stored (separated by commas) -->
                 <div class="form-group mb-3">
-                    <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden>
+                    <input type="text" class="form-control" id="serial_numbers" name="serial_numbers" readonly hidden value="{{ $item->serial_numbers }}">
                 </div>
                 
                 <div class='form-group'>
@@ -58,15 +58,15 @@
                     <textarea name="description" class="form-control" id="" cols="30" rows="10" required>{{ $item->description }}</textarea>
                 </div>
 
-                @if ($item->serial_numbers != "")
-                    <div class='form-group'>
-                        <label for='name'>Quantity</label>
-                        <input type='number' class='form-control' id='quantity' name='quantity' value="{{ $item->quantity }}" required readonly>
+                @if ($item->serial_numbers != null)
+                    <div class="form-group">
+                        {{-- <label for="name">Quantity</label> --}}
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="{{ $item->quantity }}" required hidden>
                     </div>
                 @else
-                    <div class='form-group'>
-                        <label for='name'>Quantity</label>
-                        <input type='number' class='form-control' id='quantity' name='quantity' value="{{ $item->quantity }}" required>
+                    <div class="form-group">
+                        <label for="name">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="{{ $item->quantity }}" required>
                     </div>
                 @endif
             

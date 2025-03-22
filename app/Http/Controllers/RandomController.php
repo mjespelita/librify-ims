@@ -15,7 +15,8 @@ class RandomController extends Controller
     {
         return view('technicians.my-onsite-items', [
             'onsites' => Onsites::where('isTrash', '0')
-                ->where('technicians_id', Auth::user()->id)->paginate(10),
+                ->paginate(10),
+                // ->where('technicians_id', Auth::user()->id)->paginate(10),
             'technician' => User::find(Auth::user()->id)
         ]);
     }
@@ -25,7 +26,8 @@ class RandomController extends Controller
         return view('technicians.view-my-onsite-items-on-site', [
             'onsites' => Onsites::where('isTrash', '0')
                 ->where('sites_id', $siteId)
-                ->where('technicians_id', Auth::user()->id)->paginate(10),
+                ->paginate(10),
+                // ->where('technicians_id', Auth::user()->id)->paginate(10),
             'site' => Sites::find($siteId)
         ]);
     }
@@ -34,7 +36,8 @@ class RandomController extends Controller
     {
         return view('technicians.my-damaged-items', [
             'damages' => Damages::where('isTrash', '0')
-                ->where('technicians_id', Auth::user()->id)->paginate(10),
+                ->paginate(10),
+                // ->where('technicians_id', Auth::user()->id)->paginate(10),
             'technician' => User::find(Auth::user()->id)
         ]);
     }
@@ -44,7 +47,8 @@ class RandomController extends Controller
         return view('technicians.view-my-damaged-items-on-site', [
             'damages' => Damages::where('isTrash', '0')
                 ->where('sites_id', $siteId)
-                ->where('technicians_id', Auth::user()->id)->paginate(10),
+                ->paginate(10),
+                // ->where('technicians_id', Auth::user()->id)->paginate(10),
             'site' => Sites::find($siteId)
         ]);
     }

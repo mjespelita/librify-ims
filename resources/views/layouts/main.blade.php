@@ -38,6 +38,18 @@
                     <i class='fas fa-box'></i> Items
                 </a>
 
+                <a href='{{ url('sites') }}' class='{{ request()->is('sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-house'></i> Sites
+                </a>
+                
+                <a href='{{ url('types') }}' class='{{ request()->is('types', 'trash-types', 'create-types', 'show-types/*', 'edit-types/*', 'delete-types/*', 'types-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-cogs'></i> Types
+                </a>
+
+                <a href='{{ url('technicians') }}' class='{{ request()->is('technicians', 'trash-technicians', 'create-technicians', 'show-technicians/*', 'edit-technicians/*', 'delete-technicians/*', 'technicians-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-users'></i> Technicians
+                </a>
+
                 <a href='{{ url('onsites') }}' class='{{ request()->is('onsites', 'view-technician-onsite-items/*', 'trash-onsites', 'create-onsites', 'show-onsites/*', 'edit-onsites/*', 'delete-onsites/*', 'onsites-search*') ? 'active' : '' }}'>
                     <i class='fas fa-house'></i> On Site Items
                 </a>
@@ -49,18 +61,6 @@
                 <a href='{{ url('itemlogs') }}' class='{{ request()->is('itemlogs', 'trash-itemlogs', 'create-itemlogs', 'show-itemlogs/*', 'edit-itemlogs/*', 'delete-itemlogs/*', 'itemlogs-search*') ? 'active' : '' }}'>
                     <i class='fas fa-bars'></i> Item Logs
                 </a>
-
-                <a href='{{ url('sites') }}' class='{{ request()->is('sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
-                    <i class='fas fa-house'></i> Sites
-                </a>
-
-                <a href='{{ url('technicians') }}' class='{{ request()->is('technicians', 'trash-technicians', 'create-technicians', 'show-technicians/*', 'edit-technicians/*', 'delete-technicians/*', 'technicians-search*') ? 'active' : '' }}'>
-                    <i class='fas fa-users'></i> Technicians
-                </a>
-
-                <a href='{{ url('types') }}' class='{{ request()->is('types', 'trash-types', 'create-types', 'show-types/*', 'edit-types/*', 'delete-types/*', 'types-search*') ? 'active' : '' }}'>
-                    <i class='fas fa-cogs'></i> Types
-                </a>
                 
                 <a href='{{ url('logs') }}' class='{{ request()->is('logs', 'create-logs', 'show-logs/*', 'edit-logs/*', 'delete-logs/*', 'logs-search*') ? 'active' : '' }}'>
                     <i class='fas fa-clipboard-list'></i> Logs
@@ -68,7 +68,12 @@
             @endif
 
             @if (Auth::user()->role === 'technician')
-                <a href='{{ url('my-onsite-items/'.Auth::user()->id) }}' class='{{ request()->is('my-onsite-items/*', 'view-onsite-items-on-site/*', 'trash-onsites', 'create-my-onsite-items', 'show-my-onsite-items/*', 'edit-my-onsite-items/*', 'delete-my-onsite-items/*', 'my-onsite-items-search*') ? 'active' : '' }}'>
+
+                <a href='{{ url('my-sites') }}' class='{{ request()->is('my-sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-house'></i> My Sites
+                </a>
+
+                <a href='{{ url('my-onsite-items/'.Auth::user()->id) }}' class='{{ request()->is('my-onsite-items/*', 'view-my-onsite-items-on-site/*', 'trash-onsites', 'create-my-onsite-items', 'show-my-onsite-items/*', 'edit-my-onsite-items/*', 'delete-my-onsite-items/*', 'my-onsite-items-search*') ? 'active' : '' }}'>
                     <i class='fas fa-house'></i> My On Site Items
                 </a>
 
@@ -76,9 +81,6 @@
                     <i class='fas fa-exclamation-triangle'></i> My Damaged Items
                 </a>
 
-                <a href='{{ url('my-sites') }}' class='{{ request()->is('my-sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
-                    <i class='fas fa-house'></i> My Sites
-                </a>
             @endif  
             
             <a href='{{ url('user/profile') }}'><i class='fas fa-user'></i> {{ Auth::user()->name }}</a>
