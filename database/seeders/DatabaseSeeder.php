@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
+            'name' => 'Administrator',
             'email' => 'test@example.com',
             'role' => 'admin',
         ]);
@@ -44,309 +44,178 @@ class DatabaseSeeder extends Seeder
             'email' => 'mikejohnson@example.com',
             'role' => 'technician',
         ]);
-
-        // types
-
-        Types::create(['name' => 'Router']);
-        Types::create(['name' => 'Hub']);
-        Types::create(['name' => 'Switch']);
-        Types::create(['name' => 'Modem']);
-        Types::create(['name' => 'Access Point']);
-        Types::create(['name' => 'Repeater']);
-        Types::create(['name' => 'Firewall']);
-        Types::create(['name' => 'Bridge']);
-        Types::create(['name' => 'Load Balancer']);
-        Types::create(['name' => 'Gateway']);
-
+        
         // Sites
         
         $faker = Faker::create();
 
-        // Create multiple sites with a valid phone number
-        Sites::create([
-            'name' => 'Allen Central Elementary School',
-            'phonenumber' => $faker->numerify('09#########'), // Generates a phone number with '09' followed by 9 digits
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Greenwood High School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Riverdale Middle School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Sunnybrook Academy',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Maplewood Primary School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w' ,// Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Blue Ridge International School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Westlake High School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Oak Ridge College',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Pinecrest Secondary School',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        Sites::create([
-            'name' => 'Cedar Valley Institute',
-            'phonenumber' => $faker->numerify('09#########'),
-            'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
-            'users_id' => 1
-        ]);
-        
-        // Items
+// Create multiple sites with a valid phone number
+Sites::create([
+    'name' => 'Allen Central Elementary School',
+    'phonenumber' => $faker->numerify('09#########'), // Generates a phone number with '09' followed by 9 digits
+    'google_map_link' => 'https://www.google.com/maps/embed/v1/place?q=London&key=AIzaSyBJyFU3OF64Fn1tPHkP37DifH4V0uhuU8w', // Example google_map_link
+    'users_id' => 1
+]);
 
-        // Fetch all Types (these are already seeded)
-        $types = Types::all();
+// Create types
+Types::create(['name' => 'Router']);
+Types::create(['name' => 'Hub']);
+Types::create(['name' => 'Switch']);
+Types::create(['name' => 'Modem']);
+Types::create(['name' => 'Access Point']);
+Types::create(['name' => 'Repeater']);
+Types::create(['name' => 'Firewall']);
+Types::create(['name' => 'Bridge']);
+Types::create(['name' => 'Load Balancer']);
+Types::create(['name' => 'Gateway']);
+Types::create(['name' => 'LAN CABLE']);
 
-        // Create 20 items with random data and corresponding type IDs
-        Items::create([
-            'itemId' => 'ITEM0001',
-            'name' => 'TP-Link Router',
-            'model' => 'Archer C7',
-            'brand' => 'TP-Link',
-            'types_id' => $types->where('name', 'Router')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
+// Fetch all Types (these are already seeded)
+$types = Types::all();
 
-        Items::create([
-            'itemId' => 'ITEM0002',
-            'name' => 'Netgear Hub',
-            'model' => 'GS308',
-            'brand' => 'Netgear',
-            'types_id' => $types->where('name', 'Hub')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
+// Function to generate serial numbers with a prefix and random 5-digit number
+function generateSerialNumbers($name, $count) {
+    $faker = Faker::create();
+    $prefix = strtoupper(preg_replace('/[^a-zA-Z0-9]+/', '', $name)); // Remove non-alphanumeric characters and make it uppercase
+    $serialNumbers = [];
+    
+    for ($i = 0; $i < $count; $i++) {
+        $serialNumbers[] = $prefix . '_' . str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);  // Generate a serial number with the prefix and 5 digits
+    }
 
-        Items::create([
-            'itemId' => 'ITEM0003',
-            'name' => 'Cisco Switch',
-            'model' => 'SG350-28',
-            'brand' => 'Cisco',
-            'types_id' => $types->where('name', 'Switch')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
+    return implode(', ', $serialNumbers);  // Return the serial numbers separated by commas
+}
 
-        Items::create([
-            'itemId' => 'ITEM0004',
-            'name' => 'Motorola Modem',
-            'model' => 'MB7621',
-            'brand' => 'Motorola',
-            'types_id' => $types->where('name', 'Modem')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
+// Create items with random serial numbers and quantities
+$itemsData = [
+    [
+        'itemId' => 'ITEM0002',
+        'name' => 'D-Link Router',
+        'model' => 'DIR-615',
+        'brand' => 'D-Link',
+        'types_id' => $types->where('name', 'Router')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 3, // For example, we want 3 serial numbers
+        'serial_numbers' => generateSerialNumbers('D-Link', 3),  // Generate 3 serial numbers with 'DLINK_' prefix
+    ],
+    [
+        'itemId' => 'ITEM0003',
+        'name' => 'Netgear Hub',
+        'model' => 'JGS524Ev2',
+        'brand' => 'Netgear',
+        'types_id' => $types->where('name', 'Hub')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 2, // 2 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('Netgear', 2),
+    ],
+    [
+        'itemId' => 'ITEM0004',
+        'name' => 'Cisco Switch',
+        'model' => '2960X',
+        'brand' => 'Cisco',
+        'types_id' => $types->where('name', 'Switch')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 5, // 5 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('Cisco', 5),
+    ],
+    [
+        'itemId' => 'ITEM0005',
+        'name' => 'TP-Link Modem',
+        'model' => 'TD-W8960N',
+        'brand' => 'TP-Link',
+        'types_id' => $types->where('name', 'Modem')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 4, // 4 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('TP-Link', 4),
+    ],
+    [
+        'itemId' => 'ITEM0006',
+        'name' => 'Wireless Access Point',
+        'model' => 'TL-WA801ND',
+        'brand' => 'TP-Link',
+        'types_id' => $types->where('name', 'Access Point')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 3, // 3 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('TP-Link', 3),
+    ],
+    [
+        'itemId' => 'ITEM0007',
+        'name' => 'TP-Link Repeater',
+        'model' => 'RE200',
+        'brand' => 'TP-Link',
+        'types_id' => $types->where('name', 'Repeater')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 1, // 1 serial number for this item
+        'serial_numbers' => generateSerialNumbers('TP-Link', 1),
+    ],
+    [
+        'itemId' => 'ITEM0008',
+        'name' => 'Fortinet Firewall',
+        'model' => 'FortiGate 60E',
+        'brand' => 'Fortinet',
+        'types_id' => $types->where('name', 'Firewall')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 2, // 2 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('Fortinet', 2),
+    ],
+    [
+        'itemId' => 'ITEM0009',
+        'name' => 'TP-Link Bridge',
+        'model' => 'TL-WA5210G',
+        'brand' => 'TP-Link',
+        'types_id' => $types->where('name', 'Bridge')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 4, // 4 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('TP-Link', 4),
+    ],
+    [
+        'itemId' => 'ITEM0010',
+        'name' => 'Cisco Load Balancer',
+        'model' => 'ACE 4710',
+        'brand' => 'Cisco',
+        'types_id' => $types->where('name', 'Load Balancer')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 2, // 2 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('Cisco', 2),
+    ],
+    [
+        'itemId' => 'ITEM0011',
+        'name' => 'Ubiquiti Gateway',
+        'model' => 'USG-PRO-4',
+        'brand' => 'Ubiquiti',
+        'types_id' => $types->where('name', 'Gateway')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'piece',
+        'quantity' => 5, // 5 serial numbers for this item
+        'serial_numbers' => generateSerialNumbers('Ubiquiti', 5),
+    ],
+    [
+        'itemId' => 'ITEM0012',
+        'name' => 'LAN Cable',
+        'model' => 'Cat5e',
+        'brand' => 'Generic',
+        'types_id' => $types->where('name', 'LAN CABLE')->first()->id,
+        'description' => $faker->sentence,
+        'unit' => 'meter',
+        'quantity' => 0, // LAN Cable does not have serial numbers
+        'serial_numbers' => null, // No serial numbers for LAN Cable
+    ]
+];
 
-        Items::create([
-            'itemId' => 'ITEM0005',
-            'name' => 'Ubiquiti Access Point',
-            'model' => 'UniFi 6 LR',
-            'brand' => 'Ubiquiti',
-            'types_id' => $types->where('name', 'Access Point')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
+// Create the items
+foreach ($itemsData as $item) {
+    Items::create($item);
+}
 
-        Items::create([
-            'itemId' => 'ITEM0006',
-            'name' => 'Asus Router',
-            'model' => 'RT-AC66U',
-            'brand' => 'Asus',
-            'types_id' => $types->where('name', 'Router')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0007',
-            'name' => 'D-Link Hub',
-            'model' => 'DGS-1016D',
-            'brand' => 'D-Link',
-            'types_id' => $types->where('name', 'Hub')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0008',
-            'name' => 'Linksys Switch',
-            'model' => 'LGS308',
-            'brand' => 'Linksys',
-            'types_id' => $types->where('name', 'Switch')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0009',
-            'name' => 'Arris Modem',
-            'model' => 'SB6183',
-            'brand' => 'Arris',
-            'types_id' => $types->where('name', 'Modem')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0010',
-            'name' => 'TP-Link Repeater',
-            'model' => 'RE450',
-            'brand' => 'TP-Link',
-            'types_id' => $types->where('name', 'Repeater')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0011',
-            'name' => 'Zyxel Router',
-            'model' => 'NBG6716',
-            'brand' => 'Zyxel',
-            'types_id' => $types->where('name', 'Router')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0012',
-            'name' => 'TP-Link Hub',
-            'model' => 'TL-SG1008D',
-            'brand' => 'TP-Link',
-            'types_id' => $types->where('name', 'Hub')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0013',
-            'name' => 'Ubiquiti Switch',
-            'model' => 'EdgeSwitch 24',
-            'brand' => 'Ubiquiti',
-            'types_id' => $types->where('name', 'Switch')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0014',
-            'name' => 'ARRIS Access Point',
-            'model' => 'WAP2000',
-            'brand' => 'ARRIS',
-            'types_id' => $types->where('name', 'Access Point')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0015',
-            'name' => 'Cisco Repeater',
-            'model' => 'WAP121',
-            'brand' => 'Cisco',
-            'types_id' => $types->where('name', 'Repeater')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0016',
-            'name' => 'D-Link Modem',
-            'model' => 'DSL-2740B',
-            'brand' => 'D-Link',
-            'types_id' => $types->where('name', 'Modem')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0017',
-            'name' => 'Linksys Repeater',
-            'model' => 'RE7000',
-            'brand' => 'Linksys',
-            'types_id' => $types->where('name', 'Repeater')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0018',
-            'name' => 'Netgear Access Point',
-            'model' => 'WAC510',
-            'brand' => 'Netgear',
-            'types_id' => $types->where('name', 'Access Point')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
-
-        Items::create([
-            'itemId' => 'ITEM0019',
-            'name' => 'Asus Modem',
-            'model' => 'DSL-AC68U',
-            'brand' => 'Asus',
-            'types_id' => $types->where('name', 'Modem')->first()->id,
-            'description' => $faker->sentence,
-            'unit' => 'piece',
-            'quantity' => 100
-        ]);
 
     }
 }
