@@ -87,7 +87,10 @@
                                 {{-- <th scope='row'>
                                     <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                 </th> --}}
-                                <td>{{ $item->name }}</td><td>{{ $item->email }}</td>
+                                <td>{{ $item->name }}</td>
+                                <td>
+                                    <a class="fw-bold text-decoration-none text-primary" href="mailto: {{ $item->email }}">{{ $item->email }}</a>
+                                </td>
                                 <td>
                                     {{-- <a href='{{ route('technicians.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a>
                                     <a href='{{ route('technicians.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a> --}}
