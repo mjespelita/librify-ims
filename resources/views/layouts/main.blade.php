@@ -99,6 +99,40 @@
         <x-main-notification />
 
         <div class='content'>
+            <!-- Button to trigger the modal -->
+            <button type="button" style="float: right" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fas fa-search"></i> Search Serial Number
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Search Serial Number</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" class="form-control searchedSerialNumberInput" placeholder="Serial Number">
+                        </div>
+                        <!-- Clickable List -->
+                        <ul class="list-group searchedSerialNumber">
+                            <div style="text-align: center" class="p-3">
+                                <div class="spinner-border"></div>
+                            </div>
+                        </ul>
+                    </div>
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
+                    </div>
+                </div>
+                </div>
+            </div>
             @yield('content')
         </div>
 

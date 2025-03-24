@@ -291,4 +291,28 @@ $(document).on('click', '.badge', function () {
         }
     }
 
+    // search serial numbers
+
+    $.get('/get-search-serial-numbers', function (res) {
+        $('.searchedSerialNumber').html("")
+        // filter
+
+        $(".searchedSerialNumberInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $(".searchedSerialNumberResult").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        console.log(res);
+
+        res.serial_numbers.forEach(element => {
+            $('.searchedSerialNumber').append(`
+                <li class="list-group-item list-group-item-action searchedSerialNumberResult">
+                    <a href="${element.link}" class="text-decoration-none text-dark">${element.serial_number}</a>
+                </li>
+            `)
+        });
+    })
+
 })

@@ -195,6 +195,76 @@ Route::middleware([
             'serial_numbers' => array_values($validSerialNumbers), // Ensure it's an indexed array
         ], 200); // Optionally specify the status code
     });
+
+    Route::get('/get-search-serial-numbers', function () {
+        // Fetch all serial numbers from the Items model
+    $allItems = Items::all();
+    
+    // Fetch the serial numbers from the Onsites and Damages tables with their respective sites_ids
+    $onsites = Onsites::select('serial_numbers', 'sites_id')->get();
+    $damages = Damages::select('serial_numbers', 'sites_id')->get();
+    
+    // Initialize an array to hold all serial numbers with their links
+    $serialNumbersWithLinks = [];
+    
+    // Process Onsites serial numbers and their corresponding sites_ids
+    foreach ($onsites as $onsite) {
+        $itemSerialNumbers = array_map('trim', explode(',', $onsite->serial_numbers));
+        
+        foreach ($itemSerialNumbers as $serialNumber) {
+            $serialNumbersWithLinks[] = [
+                'serial_number' => $serialNumber,
+                'link' => '/show-sites/' . $onsite->sites_id
+            ];
+        }
+    }
+
+    // Process Damages serial numbers and their corresponding sites_ids
+    foreach ($damages as $damage) {
+        $itemSerialNumbers = array_map('trim', explode(',', $damage->serial_numbers));
+        
+        foreach ($itemSerialNumbers as $serialNumber) {
+            $serialNumbersWithLinks[] = [
+                'serial_number' => $serialNumber,
+                'link' => '/show-sites/' . $damage->sites_id
+            ];
+        }
+    }
+
+    // Process Items serial numbers
+    foreach ($allItems as $item) {
+        $itemSerialNumbers = array_map('trim', explode(',', $item->serial_numbers));
+        
+        foreach ($itemSerialNumbers as $serialNumber) {
+            // If there is a sites_id in the Items model, use it for the link
+            if (isset($item->sites_id)) {
+                $serialNumbersWithLinks[] = [
+                    'serial_number' => $serialNumber,
+                    'link' => '/show-sites/' . $item->sites_id
+                ];
+            } else {
+                // If no sites_id in Items, you can skip the link or leave it as null/empty
+                $serialNumbersWithLinks[] = [
+                    'serial_number' => $serialNumber,
+                    'link' => '/show-items/' . $item->id
+                ];
+            }
+        }
+    }
+
+    // Remove duplicates by serial_number (so no duplicates are included in the final list)
+    $serialNumbersWithLinks = array_map("unserialize", array_unique(array_map("serialize", $serialNumbersWithLinks)));
+    
+    // Sort the array by serial_number in alphabetical order
+    usort($serialNumbersWithLinks, function ($a, $b) {
+        return strcmp($a['serial_number'], $b['serial_number']);
+    });
+
+    // Return the serial numbers with their links in the required format
+    return response()->json([
+        'serial_numbers' => $serialNumbersWithLinks
+    ], 200);  
+    });
     
 
     // end...

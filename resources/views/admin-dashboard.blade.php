@@ -33,6 +33,7 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-4 col-sm-12 col-lg-4">
+
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Total Sites</h5>
