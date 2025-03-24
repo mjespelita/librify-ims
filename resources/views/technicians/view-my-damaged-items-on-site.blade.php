@@ -98,7 +98,7 @@
                             <!-- Search Form -->
                             <form action='{{ url('/damages-search') }}' method='GET'>
                                 <div class='input-group'>
-                                    <input type='text' name='search' value='{{ request()->get('search') }}' class='form-control' placeholder='Search...'>
+                                    <input type='text' name='search' value='{{ request()->get('search') }}' class='form-control' placeholder='Search Site...'>
                                     <div class='input-group-append'>
                                         <button class='btn btn-success' type='submit'><i class='fa fa-search'></i></button>
                                     </div>
