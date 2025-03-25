@@ -92,7 +92,7 @@
                                     <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                 </th>
                                 <td>
-                                    {{ $item->name }}
+                                    <a class="fw-bold text-decoration-none text-primary" href="{{ url('/show-sites/'.$item->id) }}">{{ $item->name }}</a>
                                 </td>
                                 <td>
                                     <a href="tel:{{ $item->phonenumber }}" class="text-primary text-decoration-none fw-bold">{{ $item->phonenumber }}</a>

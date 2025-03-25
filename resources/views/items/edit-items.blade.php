@@ -5,9 +5,10 @@
     <h1>Edit Items</h1>
 
     <div class='card'>
-        <div class='card-body'>
+        <div class='card-body'>    
             <form action='{{ route('items.update', $item->id) }}' method='POST'>
                 @csrf
+                
 
                 @if ($item->serial_numbers != "")
                     <!-- Display the tags -->
@@ -16,6 +17,7 @@
                             <span class="badge bg-success me-2 mb-2" style="cursor: pointer;">{{ trim($serial_number) }}</span>
                         @endforeach
                     </div>
+                    
                 @endif
 
                 <!-- Hidden input field where tags are stored (separated by commas) -->

@@ -135,7 +135,9 @@
                                             <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                         </th>
                                         <td><b>{{ $item->items->itemId ?? "no data" }}</b></td>
-                                        <td>{{ $item->items->name ?? "no data" }}</td>
+                                        <td>
+                                            {{ $item->items->name ?? "no data" }}
+                                        </td>
                                         <td>
                                             @if($item->serial_numbers)
                                                 @foreach(explode(',', $item->serial_numbers) as $serial_number)

@@ -76,7 +76,9 @@
                             {{-- <th scope='col'>
                             <input type='checkbox' name='' id='' class='checkAll'>
                             </th> --}}
-                            <th>Name</th><th>Email</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Email</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -87,7 +89,10 @@
                                 {{-- <th scope='row'>
                                     <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                 </th> --}}
-                                <td>{{ $item->name }}</td>
+                                <td><img src="{{ $item->profile_photo_path ? url('storage/' . $item->profile_photo_path) : 'assets/profile_photo_placeholder.png' }}" height="50" width="50" style="border-radius: 50%;" alt="User Profile Photo"></td>
+                                <td>
+                                    <a href="{{ url('show-technicians/'.$item->id) }}" class="fw-bold text-decoration-none text-primary">{{ $item->name }}</a>
+                                </td>
                                 <td>
                                     <a class="fw-bold text-decoration-none text-primary" href="mailto: {{ $item->email }}">{{ $item->email }}</a>
                                 </td>

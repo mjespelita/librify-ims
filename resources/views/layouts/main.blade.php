@@ -25,15 +25,14 @@
                 <div class="p-3">
                     <img src='{{ url('assets/logo.png') }}' alt=''> <br>
                 </div>
-                <div>
-                    <b>Inventory Management System</b>
-                </div>
             </div>
             <a href='{{ url('dashboard') }}' class='{{ request()->is('dashboard', 'admin-dashboard', 'technician-dashboard') ? 'active' : '' }}'>
                 <i class='fas fa-tachometer-alt'></i> Dashboard
             </a>
-            
             @if (Auth::user()->role === 'admin')
+                <div class="p-3">
+                    <b>Inventory Management</b>
+                </div>
                 <a href='{{ url('items') }}' class='{{ request()->is('items', 'trash-items', 'create-items', 'show-items/*', 'edit-items/*', 'delete-items/*', 'view-add-item-quantity-logs/*', 'create-add-item-quantity/*', 'items-search*') ? 'active' : '' }}'>
                     <i class='fas fa-box'></i> Items
                 </a>
@@ -65,6 +64,10 @@
                 <a href='{{ url('logs') }}' class='{{ request()->is('logs', 'create-logs', 'show-logs/*', 'edit-logs/*', 'delete-logs/*', 'logs-search*') ? 'active' : '' }}'>
                     <i class='fas fa-clipboard-list'></i> Logs
                 </a>
+                
+                <div class="p-3">
+                    <b>Task Management</b>
+                </div>
             @endif
 
             @if (Auth::user()->role === 'technician')
@@ -100,7 +103,7 @@
 
         <div class='content'>
             <!-- Button to trigger the modal -->
-            <button type="button" style="float: right" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" style="float: right" class="btn btn-primary mb-2 searchSerialNumberButton" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <i class="fas fa-search"></i> Search Serial Number
             </button>
 
@@ -119,11 +122,77 @@
                             <input type="text" class="form-control searchedSerialNumberInput" placeholder="Serial Number">
                         </div>
                         <!-- Clickable List -->
-                        <ul class="list-group searchedSerialNumber">
-                            <div style="text-align: center" class="p-3">
-                                <div class="spinner-border"></div>
-                            </div>
+                        <ul class="list-group searchedSerialNumber" style="overflow-x: scroll; height: 50vh">
+                            @php
+                                // Fetch all items from the Items model
+                                $allItems = \App\Models\Items::all();
+                                
+                                // Fetch the serial numbers from the Onsites and Damages tables with their respective sites_ids
+                                $onsites = \App\Models\Onsites::select('serial_numbers', 'sites_id')->get();
+                                $damages = \App\Models\Damages::select('serial_numbers', 'sites_id')->get();
+                                
+                                // Initialize an array to hold all serial numbers with their links
+                                $serialNumbersWithLinks = [];
+                                
+                                // Process Onsites serial numbers and their corresponding sites_ids
+                                foreach ($onsites as $onsite) {
+                                    $itemSerialNumbers = array_map('trim', explode(',', $onsite->serial_numbers));
+                                    foreach ($itemSerialNumbers as $serialNumber) {
+                                        $serialNumbersWithLinks[] = [
+                                            'serial_number' => $serialNumber,
+                                            'link' => '/show-sites/' . $onsite->sites_id
+                                        ];
+                                    }
+                                }
+
+                                // Process Damages serial numbers and their corresponding sites_ids
+                                foreach ($damages as $damage) {
+                                    $itemSerialNumbers = array_map('trim', explode(',', $damage->serial_numbers));
+                                    foreach ($itemSerialNumbers as $serialNumber) {
+                                        $serialNumbersWithLinks[] = [
+                                            'serial_number' => $serialNumber,
+                                            'link' => '/show-sites/' . $damage->sites_id
+                                        ];
+                                    }
+                                }
+
+                                // Process Items serial numbers
+                                foreach ($allItems as $item) {
+                                    $itemSerialNumbers = array_map('trim', explode(',', $item->serial_numbers));
+                                    foreach ($itemSerialNumbers as $serialNumber) {
+                                        if (isset($item->sites_id)) {
+                                            $serialNumbersWithLinks[] = [
+                                                'serial_number' => $serialNumber,
+                                                'link' => '/show-sites/' . $item->sites_id
+                                            ];
+                                        } else {
+                                            // If no sites_id in Items, use the item id in the link
+                                            $serialNumbersWithLinks[] = [
+                                                'serial_number' => $serialNumber,
+                                                'link' => '/show-items/' . $item->id
+                                            ];
+                                        }
+                                    }
+                                }
+
+                                // Remove duplicates by serial_number
+                                $serialNumbersWithLinks = array_map("unserialize", array_unique(array_map("serialize", $serialNumbersWithLinks)));
+
+                                // Sort by serial_number in alphabetical order
+                                usort($serialNumbersWithLinks, function ($a, $b) {
+                                    return strcmp($a['serial_number'], $b['serial_number']);
+                                });
+                            @endphp
+
+                            @foreach ($serialNumbersWithLinks as $serial)
+                                <li class="list-group-item searchedSerialNumberResult">
+                                    <a href="{{ $serial['link'] }}" class="text-decoration-none fw-bold text-primary">
+                                        {{ $serial['serial_number'] }}
+                                    </a>
+                                </li>
+                            @endforeach
                         </ul>
+
                     </div>
                     <!-- Modal Footer -->
                     <div class="modal-footer">

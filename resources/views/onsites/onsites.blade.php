@@ -139,7 +139,9 @@
                                             <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                         </th>
                                         <td><b>{{ $item->items->itemId ?? "no data" }}</b></td>
-                                        <td>{{ $item->items->name ?? "no data" }}</td>
+                                        <td>
+                                            <a class="fw-bold text-decoration-none text-primary" href="{{ url('/show-items/'.$item->items->id ?? "no data") }}">{{ $item->items->name ?? "no data" }}</a>
+                                        </td>
                                         <td>
                                             @if($item->serial_numbers)
                                                 @foreach(explode(',', $item->serial_numbers) as $serial_number)

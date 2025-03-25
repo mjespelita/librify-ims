@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Broken Line Detector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.21.0/tf.min.js"></script>
+</head>
+<body>
+    <h2>AI Broken Line Detector</h2>
+    <input type="file" id="imageUpload" accept="image/*">
+    <button onclick="detectBrokenDays()">Detect Broken Days</button>
+    <p id="result"></p>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        async function detectBrokenDays() {
+            const fileInput = document.getElementById('imageUpload');
+            if (!fileInput.files.length) {
+                alert('Please upload an image first!');
+                return;
+            }
+
+            const img = new Image();
+            const file = fileInput.files[0];
+            img.src = URL.createObjectURL(file);
+            
+            img.onload = async function () {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                const imageTensor = tf.browser.fromPixels(canvas).mean(2); // Convert to grayscale
+                const dataArray = await imageTensor.data();
+                const width = imageTensor.shape[1];
+                const brokenDays = countBrokenLines(dataArray, width);
+                
+                document.getElementById("result").innerText = `Number of broken days: ${brokenDays}`;
+            };
+        }
+
+        function countBrokenLines(dataArray, width) {
+            let brokenDays = 0;
+            let threshold = 10; // Adjust based on brightness variations
+            let previousRow = Array(width).fill(0);
+
+            for (let i = 0; i < dataArray.length; i += width) {
+                let currentRow = dataArray.slice(i, i + width);
+                if (currentRow.reduce((a, b) => a + b, 0) < threshold) {
+                    brokenDays++;
+                }
+                previousRow = currentRow;
+            }
+            return brokenDays;
+        }
+    </script>
+</body>
+</html>

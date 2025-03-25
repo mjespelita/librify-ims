@@ -97,7 +97,12 @@
                                 <th scope='row'>
                                     <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                 </th>
-                                <td><b>{{ $item->itemId }}</b></td><td>{{ $item->name }}</td><td>{{ $item->model }}</td><td>{{ $item->brand }}</td>
+                                <td><b>{{ $item->itemId }}</b></td>
+                                <td>
+                                    <a class="fw-bold text-decoration-none text-primary" href="{{ url('/show-items/'.$item->id) }}">{{ $item->name }}</a>
+                                </td>
+                                <td>{{ $item->model }}</td>
+                                <td>{{ $item->brand }}</td>
                                 <td><b class="text-success">{{ $item->types->name ?? "no data" }}</b></td>
                                 <td>{{ Smark\Smark\Stringer::truncateString($item->description, 20) }}</td>
                                 <td><b class="text-primary">{{ $item->quantity }}</b></td>

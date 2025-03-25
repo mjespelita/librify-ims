@@ -53,6 +53,40 @@
             </div>
         </div>
         <div class="col-lg-6 col-md-6 col-sm-12">
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary">Technicians deployed to this Site</h5>
+                    <div class='table-responsive'>
+                        <table class='table table-striped'>
+                            <thead>
+                                <tr>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Date and Time</th>
+                                </tr>
+                            </thead>
+        
+                            <tbody>
+                                @forelse(App\Models\Deployedtechnicians::where('sites_id', $item->id)->get() as $site)
+                                    <tr>
+                                        <td><img src="{{ $site->users->profile_photo_path ? url('/storage/' . $site->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="50" width="50" style="border-radius: 50%;" alt="User Profile Photo"></td>
+                                        <td><b>{{ $site->users->name ?? "no data" }} ({{ $site->users->role ?? "no data" }})</b></td>
+                                        <td>{{ $site->users->email ?? "no data" }}</td>
+                                        <td>{{ $site->created_at }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td>No Record...</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-body">
                     <h5 class="fw-bold text-success">Items</h5>
@@ -151,37 +185,6 @@
                                         </td>
                                         <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->created_at) }}</td>
                                         <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($site->updated_at) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td>No Record...</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="fw-bold text-primary">Technicians deployed to this Site</h5>
-                    <div class='table-responsive'>
-                        <table class='table table-striped'>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Date and Time</th>
-                                </tr>
-                            </thead>
-        
-                            <tbody>
-                                @forelse(App\Models\Deployedtechnicians::where('sites_id', $item->id)->get() as $site)
-                                    <tr>
-                                        <td><b>{{ $site->users->name ?? "no data" }} ({{ $site->users->role ?? "no data" }})</b></td>
-                                        <td>{{ $site->users->email ?? "no data" }}</td>
-                                        <td>{{ $site->created_at }}</td>
                                     </tr>
                                 @empty
                                     <tr>

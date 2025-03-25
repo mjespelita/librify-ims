@@ -29,6 +29,7 @@
         
                         <!-- Display the tags -->
                         <div id="tagContainer" class="mb-3">
+                            <small class="serialNumberCustomToggle" style="display: none">(Click serial number to remove)</small>
                             <!-- Tags will appear here -->
                         </div>
             

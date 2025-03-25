@@ -72,7 +72,7 @@ class TechniciansController extends Controller {
     public function show(Technicians $technicians, $techniciansId)
     {
         return view('technicians.show-technicians', [
-            'item' => Technicians::where('id', $techniciansId)->first()
+            'item' => User::where('id', $techniciansId)->first()
         ]);
     }
 

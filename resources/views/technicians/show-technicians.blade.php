@@ -9,24 +9,21 @@
             <div class='table-responsive'>
                 <table class='table'>
                     <tr>
-                        <th>ID</th>
-                        <td>{{ $item->id }}</td>
+                        <th>Profile Photo</th>
+                        <td>
+                            <img src="{{ $item->profile_photo_path ? url('storage/' . $item->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="200" style="border-radius: 50%; border: 3px #F69639 solid;" width="200" alt="User Profile Photo">
+                        </td>
                     </tr>
-                    
-        <tr>
-            <th>Name</th>
-            <td>{{ $item->name }}</td>
-        </tr>
-    
-        <tr>
-            <th>Email</th>
-            <td>{{ $item->email }}</td>
-        </tr>
-    
-        <tr>
-            <th>Password</th>
-            <td>{{ $item->password }}</td>
-        </tr>
+
+                    <tr>
+                        <th>Name</th>
+                        <td>{{ $item->name }}</td>
+                    </tr>
+                
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ $item->email }}</td>
+                    </tr>
     
                     <tr>
                         <th>Created At</th>

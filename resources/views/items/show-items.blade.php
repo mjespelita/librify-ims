@@ -42,8 +42,8 @@
                             </tr>
                         
                             <tr>
-                                <th>Quantity</th>
-                                <td><b class="text-primary">{{ $item->quantity }}</b></td>
+                                <th>Total Quantity</th>
+                                <td><b class="text-primary">{{ $item->quantity }} {{ $item->unit }}(s)</b></td>
                             </tr>
 
                             <tr>
@@ -51,7 +51,7 @@
                                 <td>
                                     <div class="row">
                                         <div class="col-3">
-                                            <b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') - App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b>
+                                            <b class="text-success">{{ $item->quantity - App\Models\Onsites::where('items_id', $item->id)->sum('quantity') - App\Models\Damages::where('items_id', $item->id)->sum('quantity') }} {{ $item->unit }}(s)</b>
                                         </div>
                                         <div class="col-9">
                                             @if($item->serial_numbers)
@@ -98,7 +98,7 @@
                                 <td>
                                     <div class="row">
                                         <div class="col-3">
-                                            <b class="text-primary">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }}</b>
+                                            <b class="text-primary">{{ App\Models\Onsites::where('items_id', $item->id)->sum('quantity') }} {{ $item->unit }}(s)</b>
                                         </div>
                                         <div class="col-9">
                                             @if($item->serial_numbers)
@@ -124,7 +124,7 @@
                                 <td>
                                     <div class="row">
                                         <div class="col-3">
-                                            <b class="text-danger">{{ App\Models\Damages::where('items_id', $item->id)->sum('quantity') }}</b>
+                                            <b class="text-danger">{{ App\Models\Damages::where('items_id', $item->id)->sum('quantity') }} {{ $item->unit }}(s)</b>
                                         </div>
                                         <div class="col-9">
                                             @if($item->serial_numbers)
