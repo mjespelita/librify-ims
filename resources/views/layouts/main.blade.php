@@ -68,10 +68,28 @@
                 <div class="p-3">
                     <b>Task Management</b>
                 </div>
+
+                <a href='{{ url('workspaces') }}' 
+                class='{{ request()->is('workspaces', 'trash-workspaces', 'create-workspaces', 'show-workspaces/*', 'edit-workspaces/*', 'delete-workspaces/*', 'workspaces-search*') ? 'active' : '' }}'>
+                <i class='fas fa-building'></i> Workspaces
+                </a>
+
+                <a href='{{ url('projects') }}' 
+                class='{{ request()->is('projects', 'trash-projects', 'create-projects', 'show-projects/*', 'edit-projects/*', 'delete-projects/*', 'projects-search*') ? 'active' : '' }}'>
+                <i class='fas fa-folder'></i> Projects
+                </a>
+
+                <a href='{{ url('tasks') }}' 
+                class='{{ request()->is('tasks', 'trash-tasks', 'create-tasks', 'show-tasks/*', 'edit-tasks/*', 'delete-tasks/*', 'tasks-search*') ? 'active' : '' }}'>
+                <i class='fas fa-tasks'></i> Tasks
+                </a>
             @endif
 
             @if (Auth::user()->role === 'technician')
 
+                <div class="p-3">
+                    <b>Inventory Management</b>
+                </div>
                 <a href='{{ url('my-sites') }}' class='{{ request()->is('my-sites', 'trash-sites', 'create-sites', 'show-sites/*', 'edit-sites/*', 'delete-sites/*', 'sites-search*') ? 'active' : '' }}'>
                     <i class='fas fa-house'></i> My Sites
                 </a>
@@ -82,6 +100,15 @@
 
                 <a href='{{ url('my-damaged-items/'.Auth::user()->id) }}' class='{{ request()->is('my-damaged-items/*', 'view-my-damaged-items-on-site/*', 'trash-damages', 'create-damages', 'show-damages/*', 'edit-damages/*', 'delete-damages/*', 'damages-search*') ? 'active' : '' }}'>
                     <i class='fas fa-exclamation-triangle'></i> My Damaged Items
+                </a>
+
+                <div class="p-3">
+                    <b>Task Management</b>
+                </div>
+
+                <a href='{{ url('tasks') }}' 
+                class='{{ request()->is('tasks', 'trash-tasks', 'create-tasks', 'show-tasks/*', 'edit-tasks/*', 'delete-tasks/*', 'tasks-search*') ? 'active' : '' }}'>
+                <i class='fas fa-tasks'></i> My Tasks
                 </a>
 
             @endif  
@@ -102,106 +129,6 @@
         <x-main-notification />
 
         <div class='content'>
-            <!-- Button to trigger the modal -->
-            <button type="button" style="float: right" class="btn btn-primary mb-2 searchSerialNumberButton" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <i class="fas fa-search"></i> Search Serial Number
-            </button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Search Serial Number</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <!-- Modal Body -->
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control searchedSerialNumberInput" placeholder="Serial Number">
-                        </div>
-                        <!-- Clickable List -->
-                        <ul class="list-group searchedSerialNumber" style="overflow-x: scroll; height: 50vh">
-                            @php
-                                // Fetch all items from the Items model
-                                $allItems = \App\Models\Items::all();
-                                
-                                // Fetch the serial numbers from the Onsites and Damages tables with their respective sites_ids
-                                $onsites = \App\Models\Onsites::select('serial_numbers', 'sites_id')->get();
-                                $damages = \App\Models\Damages::select('serial_numbers', 'sites_id')->get();
-                                
-                                // Initialize an array to hold all serial numbers with their links
-                                $serialNumbersWithLinks = [];
-                                
-                                // Process Onsites serial numbers and their corresponding sites_ids
-                                foreach ($onsites as $onsite) {
-                                    $itemSerialNumbers = array_map('trim', explode(',', $onsite->serial_numbers));
-                                    foreach ($itemSerialNumbers as $serialNumber) {
-                                        $serialNumbersWithLinks[] = [
-                                            'serial_number' => $serialNumber,
-                                            'link' => '/show-sites/' . $onsite->sites_id
-                                        ];
-                                    }
-                                }
-
-                                // Process Damages serial numbers and their corresponding sites_ids
-                                foreach ($damages as $damage) {
-                                    $itemSerialNumbers = array_map('trim', explode(',', $damage->serial_numbers));
-                                    foreach ($itemSerialNumbers as $serialNumber) {
-                                        $serialNumbersWithLinks[] = [
-                                            'serial_number' => $serialNumber,
-                                            'link' => '/show-sites/' . $damage->sites_id
-                                        ];
-                                    }
-                                }
-
-                                // Process Items serial numbers
-                                foreach ($allItems as $item) {
-                                    $itemSerialNumbers = array_map('trim', explode(',', $item->serial_numbers));
-                                    foreach ($itemSerialNumbers as $serialNumber) {
-                                        if (isset($item->sites_id)) {
-                                            $serialNumbersWithLinks[] = [
-                                                'serial_number' => $serialNumber,
-                                                'link' => '/show-sites/' . $item->sites_id
-                                            ];
-                                        } else {
-                                            // If no sites_id in Items, use the item id in the link
-                                            $serialNumbersWithLinks[] = [
-                                                'serial_number' => $serialNumber,
-                                                'link' => '/show-items/' . $item->id
-                                            ];
-                                        }
-                                    }
-                                }
-
-                                // Remove duplicates by serial_number
-                                $serialNumbersWithLinks = array_map("unserialize", array_unique(array_map("serialize", $serialNumbersWithLinks)));
-
-                                // Sort by serial_number in alphabetical order
-                                usort($serialNumbersWithLinks, function ($a, $b) {
-                                    return strcmp($a['serial_number'], $b['serial_number']);
-                                });
-                            @endphp
-
-                            @foreach ($serialNumbersWithLinks as $serial)
-                                <li class="list-group-item searchedSerialNumberResult">
-                                    <a href="{{ $serial['link'] }}" class="text-decoration-none fw-bold text-primary">
-                                        {{ $serial['serial_number'] }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-
-                    </div>
-                    <!-- Modal Footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        {{-- <button type="button" class="btn btn-primary">Save changes</button> --}}
-                    </div>
-                </div>
-                </div>
-            </div>
             @yield('content')
         </div>
 

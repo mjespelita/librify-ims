@@ -85,4 +85,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(Deployedtechnicians::class);
     }
+
+    public function workspaceUsers()
+    {
+        return $this->hasMany(Workspaceusers::class);
+    }
+
+    public function taskAssignments()
+    {
+        return $this->hasMany(Taskassignments::class);
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Projects::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comments::class);
+    }
+
+    public function taskTimeLogs()
+    {
+        return $this->hasMany(Tasktimelogs::class);
+    }
 }

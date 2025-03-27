@@ -5,7 +5,7 @@
     <h1>Sites Details</h1>
 
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-12">
+        <div class="col-lg-6 col-md-12 col-sm-12">
             <div class='card'>
                 <div class='card-body'>
                     <div class='table-responsive'>
@@ -52,8 +52,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-sm-12">
-            
+        <div class="col-lg-6 col-md-12 col-sm-12">
+
             <div class="card">
                 <div class="card-body">
                     <h5 class="fw-bold text-primary">Technicians deployed to this Site</h5>
@@ -61,7 +61,7 @@
                         <table class='table table-striped'>
                             <thead>
                                 <tr>
-                                    <th>Profile Photo</th>
+                                    <th></th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Date and Time</th>

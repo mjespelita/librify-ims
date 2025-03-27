@@ -56,6 +56,40 @@ use App\Models\Deployedtechnicians;
 
 // end of import
 
+use App\Http\Controllers\WorkspacesController;
+use App\Models\Workspaces;
+
+// end of import
+
+use App\Http\Controllers\ProjectsController;
+use App\Models\Projects;
+
+// end of import
+
+use App\Http\Controllers\TasksController;
+use App\Models\Tasks;
+
+// end of import
+
+use App\Http\Controllers\WorkspaceusersController;
+use App\Models\Workspaceusers;
+
+// end of import
+
+use App\Http\Controllers\CommentsController;
+use App\Models\Comments;
+
+// end of import
+
+use App\Http\Controllers\TaskassignmentsController;
+use App\Models\Taskassignments;
+
+// end of import
+
+use App\Http\Controllers\TasktimelogsController;
+use App\Models\Tasktimelogs;
+
+// end of import
 
 Route::get('/', function () {
     return view('welcome');
@@ -194,6 +228,12 @@ Route::middleware([
         return response()->json([
             'serial_numbers' => array_values($validSerialNumbers), // Ensure it's an indexed array
         ], 200); // Optionally specify the status code
+    });
+
+    Route::get('/get-tasktimelogs/{taskId}', function ($tasksId) {
+        return response()->json([
+            'taskTimeLog' => Tasktimelogs::where('tasks_id', $tasksId)->first()
+        ]);
     });
     
 
@@ -953,6 +993,592 @@ Route::middleware([
     
         // Return the view with deployedtechnicians and the selected date range
         return view('deployedtechnicians.deployedtechnicians', compact('deployedtechnicians', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/workspaces', [WorkspacesController::class, 'index'])->name('workspaces.index');
+    Route::get('/create-workspaces', [WorkspacesController::class, 'create'])->name('workspaces.create');
+    Route::get('/edit-workspaces/{workspacesId}', [WorkspacesController::class, 'edit'])->name('workspaces.edit');
+    Route::get('/show-workspaces/{workspacesId}', [WorkspacesController::class, 'show'])->name('workspaces.show');
+    Route::get('/delete-workspaces/{workspacesId}', [WorkspacesController::class, 'delete'])->name('workspaces.delete');
+    Route::get('/destroy-workspaces/{workspacesId}', [WorkspacesController::class, 'destroy'])->name('workspaces.destroy');
+    Route::post('/store-workspaces', [WorkspacesController::class, 'store'])->name('workspaces.store');
+    Route::post('/update-workspaces/{workspacesId}', [WorkspacesController::class, 'update'])->name('workspaces.update');
+    Route::post('/workspaces-delete-all-bulk-data', [WorkspacesController::class, 'bulkDelete']);
+    Route::post('/workspaces-move-to-trash-all-bulk-data', [WorkspacesController::class, 'bulkMoveToTrash']);
+    Route::post('/workspaces-restore-all-bulk-data', [WorkspacesController::class, 'bulkRestore']);
+    Route::get('/trash-workspaces', [WorkspacesController::class, 'trash']);
+    Route::get('/restore-workspaces/{workspacesId}', [WorkspacesController::class, 'restore'])->name('workspaces.restore');
+
+    // Workspaces Search
+    Route::get('/workspaces-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $workspaces = Workspaces::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('workspaces.workspaces', compact('workspaces', 'search'));
+    });
+
+    // Workspaces Paginate
+    Route::get('/workspaces-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the workspaces based on the 'paginate' value
+        $workspaces = Workspaces::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated workspaces
+        return view('workspaces.workspaces', compact('workspaces'));
+    });
+
+    // Workspaces Filter
+    Route::get('/workspaces-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for workspaces
+        $query = Workspaces::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $workspaces = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $workspaces = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $workspaces = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all workspaces without filtering
+            $workspaces = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with workspaces and the selected date range
+        return view('workspaces.workspaces', compact('workspaces', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/projects', [ProjectsController::class, 'index'])->name('projects.index');
+    Route::get('/create-projects', [ProjectsController::class, 'create'])->name('projects.create');
+    Route::get('/edit-projects/{projectsId}', [ProjectsController::class, 'edit'])->name('projects.edit');
+    Route::get('/show-projects/{projectsId}', [ProjectsController::class, 'show'])->name('projects.show');
+    Route::get('/delete-projects/{projectsId}', [ProjectsController::class, 'delete'])->name('projects.delete');
+    Route::get('/destroy-projects/{projectsId}', [ProjectsController::class, 'destroy'])->name('projects.destroy');
+    Route::post('/store-projects', [ProjectsController::class, 'store'])->name('projects.store');
+    Route::post('/update-projects/{projectsId}', [ProjectsController::class, 'update'])->name('projects.update');
+    Route::post('/projects-delete-all-bulk-data', [ProjectsController::class, 'bulkDelete']);
+    Route::post('/projects-move-to-trash-all-bulk-data', [ProjectsController::class, 'bulkMoveToTrash']);
+    Route::post('/projects-restore-all-bulk-data', [ProjectsController::class, 'bulkRestore']);
+    Route::get('/trash-projects', [ProjectsController::class, 'trash']);
+    Route::get('/restore-projects/{projectsId}', [ProjectsController::class, 'restore'])->name('projects.restore');
+
+    // Projects Search
+    Route::get('/projects-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $projects = Projects::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('projects.projects', compact('projects', 'search'));
+    });
+
+    // Projects Paginate
+    Route::get('/projects-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the projects based on the 'paginate' value
+        $projects = Projects::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated projects
+        return view('projects.projects', compact('projects'));
+    });
+
+    // Projects Filter
+    Route::get('/projects-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for projects
+        $query = Projects::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $projects = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $projects = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $projects = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all projects without filtering
+            $projects = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with projects and the selected date range
+        return view('projects.projects', compact('projects', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/tasks', [TasksController::class, 'index'])->name('tasks.index');
+    Route::get('/create-tasks', [TasksController::class, 'create'])->name('tasks.create');
+    Route::get('/edit-tasks/{tasksId}', [TasksController::class, 'edit'])->name('tasks.edit');
+    Route::get('/show-tasks/{tasksId}', [TasksController::class, 'show'])->name('tasks.show');
+    Route::get('/delete-tasks/{tasksId}', [TasksController::class, 'delete'])->name('tasks.delete');
+    Route::get('/destroy-tasks/{tasksId}', [TasksController::class, 'destroy'])->name('tasks.destroy');
+    Route::post('/store-tasks', [TasksController::class, 'store'])->name('tasks.store');
+    Route::post('/update-tasks/{tasksId}', [TasksController::class, 'update'])->name('tasks.update');
+    Route::post('/tasks-delete-all-bulk-data', [TasksController::class, 'bulkDelete']);
+    Route::post('/tasks-move-to-trash-all-bulk-data', [TasksController::class, 'bulkMoveToTrash']);
+    Route::post('/tasks-restore-all-bulk-data', [TasksController::class, 'bulkRestore']);
+    Route::get('/trash-tasks', [TasksController::class, 'trash']);
+    Route::get('/restore-tasks/{tasksId}', [TasksController::class, 'restore'])->name('tasks.restore');
+
+    // Tasks Search
+    Route::get('/tasks-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $tasks = Tasks::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('tasks.tasks', compact('tasks', 'search'));
+    });
+
+    // Tasks Paginate
+    Route::get('/tasks-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the tasks based on the 'paginate' value
+        $tasks = Tasks::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated tasks
+        return view('tasks.tasks', compact('tasks'));
+    });
+
+    // Tasks Filter
+    Route::get('/tasks-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for tasks
+        $query = Tasks::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $tasks = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $tasks = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $tasks = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all tasks without filtering
+            $tasks = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with tasks and the selected date range
+        return view('tasks.tasks', compact('tasks', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/workspaceusers', [WorkspaceusersController::class, 'index'])->name('workspaceusers.index');
+    Route::get('/create-workspaceusers', [WorkspaceusersController::class, 'create'])->name('workspaceusers.create');
+    Route::get('/edit-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'edit'])->name('workspaceusers.edit');
+    Route::get('/show-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'show'])->name('workspaceusers.show');
+    Route::get('/delete-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'delete'])->name('workspaceusers.delete');
+    Route::get('/destroy-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'destroy'])->name('workspaceusers.destroy');
+    Route::post('/store-workspaceusers', [WorkspaceusersController::class, 'store'])->name('workspaceusers.store');
+    Route::post('/update-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'update'])->name('workspaceusers.update');
+    Route::post('/workspaceusers-delete-all-bulk-data', [WorkspaceusersController::class, 'bulkDelete']);
+    Route::post('/workspaceusers-move-to-trash-all-bulk-data', [WorkspaceusersController::class, 'bulkMoveToTrash']);
+    Route::post('/workspaceusers-restore-all-bulk-data', [WorkspaceusersController::class, 'bulkRestore']);
+    Route::get('/trash-workspaceusers', [WorkspaceusersController::class, 'trash']);
+    Route::get('/restore-workspaceusers/{workspaceusersId}', [WorkspaceusersController::class, 'restore'])->name('workspaceusers.restore');
+
+    // Workspaceusers Search
+    Route::get('/workspaceusers-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $workspaceusers = Workspaceusers::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('workspaceusers.workspaceusers', compact('workspaceusers', 'search'));
+    });
+
+    // Workspaceusers Paginate
+    Route::get('/workspaceusers-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the workspaceusers based on the 'paginate' value
+        $workspaceusers = Workspaceusers::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated workspaceusers
+        return view('workspaceusers.workspaceusers', compact('workspaceusers'));
+    });
+
+    // Workspaceusers Filter
+    Route::get('/workspaceusers-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for workspaceusers
+        $query = Workspaceusers::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $workspaceusers = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $workspaceusers = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $workspaceusers = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all workspaceusers without filtering
+            $workspaceusers = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with workspaceusers and the selected date range
+        return view('workspaceusers.workspaceusers', compact('workspaceusers', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/comments', [CommentsController::class, 'index'])->name('comments.index');
+    Route::get('/create-comments', [CommentsController::class, 'create'])->name('comments.create');
+    Route::get('/edit-comments/{commentsId}', [CommentsController::class, 'edit'])->name('comments.edit');
+    Route::get('/show-comments/{commentsId}', [CommentsController::class, 'show'])->name('comments.show');
+    Route::get('/delete-comments/{commentsId}', [CommentsController::class, 'delete'])->name('comments.delete');
+    Route::get('/destroy-comments/{commentsId}', [CommentsController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/store-comments', [CommentsController::class, 'store'])->name('comments.store');
+    Route::post('/update-comments/{commentsId}', [CommentsController::class, 'update'])->name('comments.update');
+    Route::post('/comments-delete-all-bulk-data', [CommentsController::class, 'bulkDelete']);
+    Route::post('/comments-move-to-trash-all-bulk-data', [CommentsController::class, 'bulkMoveToTrash']);
+    Route::post('/comments-restore-all-bulk-data', [CommentsController::class, 'bulkRestore']);
+    Route::get('/trash-comments', [CommentsController::class, 'trash']);
+    Route::get('/restore-comments/{commentsId}', [CommentsController::class, 'restore'])->name('comments.restore');
+
+    // Comments Search
+    Route::get('/comments-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $comments = Comments::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('comments.comments', compact('comments', 'search'));
+    });
+
+    // Comments Paginate
+    Route::get('/comments-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the comments based on the 'paginate' value
+        $comments = Comments::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated comments
+        return view('comments.comments', compact('comments'));
+    });
+
+    // Comments Filter
+    Route::get('/comments-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for comments
+        $query = Comments::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $comments = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $comments = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $comments = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all comments without filtering
+            $comments = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with comments and the selected date range
+        return view('comments.comments', compact('comments', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/taskassignments', [TaskassignmentsController::class, 'index'])->name('taskassignments.index');
+    Route::get('/create-taskassignments', [TaskassignmentsController::class, 'create'])->name('taskassignments.create');
+    Route::get('/edit-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'edit'])->name('taskassignments.edit');
+    Route::get('/show-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'show'])->name('taskassignments.show');
+    Route::get('/delete-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'delete'])->name('taskassignments.delete');
+    Route::get('/destroy-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'destroy'])->name('taskassignments.destroy');
+    Route::post('/store-taskassignments', [TaskassignmentsController::class, 'store'])->name('taskassignments.store');
+    Route::post('/update-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'update'])->name('taskassignments.update');
+    Route::post('/taskassignments-delete-all-bulk-data', [TaskassignmentsController::class, 'bulkDelete']);
+    Route::post('/taskassignments-move-to-trash-all-bulk-data', [TaskassignmentsController::class, 'bulkMoveToTrash']);
+    Route::post('/taskassignments-restore-all-bulk-data', [TaskassignmentsController::class, 'bulkRestore']);
+    Route::get('/trash-taskassignments', [TaskassignmentsController::class, 'trash']);
+    Route::get('/restore-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'restore'])->name('taskassignments.restore');
+
+    // Taskassignments Search
+    Route::get('/taskassignments-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $taskassignments = Taskassignments::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('taskassignments.taskassignments', compact('taskassignments', 'search'));
+    });
+
+    // Taskassignments Paginate
+    Route::get('/taskassignments-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the taskassignments based on the 'paginate' value
+        $taskassignments = Taskassignments::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated taskassignments
+        return view('taskassignments.taskassignments', compact('taskassignments'));
+    });
+
+    // Taskassignments Filter
+    Route::get('/taskassignments-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for taskassignments
+        $query = Taskassignments::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $taskassignments = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $taskassignments = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $taskassignments = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all taskassignments without filtering
+            $taskassignments = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with taskassignments and the selected date range
+        return view('taskassignments.taskassignments', compact('taskassignments', 'from', 'to'));
+    });
+
+    // end...
+
+    Route::get('/tasktimelogs', [TasktimelogsController::class, 'index'])->name('tasktimelogs.index');
+    Route::get('/create-tasktimelogs', [TasktimelogsController::class, 'create'])->name('tasktimelogs.create');
+    Route::get('/edit-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'edit'])->name('tasktimelogs.edit');
+    Route::get('/show-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'show'])->name('tasktimelogs.show');
+    Route::get('/delete-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'delete'])->name('tasktimelogs.delete');
+    Route::get('/destroy-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'destroy'])->name('tasktimelogs.destroy');
+    Route::post('/store-tasktimelogs', [TasktimelogsController::class, 'store'])->name('tasktimelogs.store');
+    Route::post('/update-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'update'])->name('tasktimelogs.update');
+    Route::post('/tasktimelogs-delete-all-bulk-data', [TasktimelogsController::class, 'bulkDelete']);
+    Route::post('/tasktimelogs-move-to-trash-all-bulk-data', [TasktimelogsController::class, 'bulkMoveToTrash']);
+    Route::post('/tasktimelogs-restore-all-bulk-data', [TasktimelogsController::class, 'bulkRestore']);
+    Route::get('/trash-tasktimelogs', [TasktimelogsController::class, 'trash']);
+    Route::get('/restore-tasktimelogs/{tasktimelogsId}', [TasktimelogsController::class, 'restore'])->name('tasktimelogs.restore');
+
+    // Route::get('/resume-timer/{taskId}', [TasktimelogsController::class, 'resumeTimer']);
+
+    Route::put('/tasktimelogs/{id}/pause', [TaskTimeLogsController::class, 'update'])->name('tasktimelogs.pause');
+    Route::put('/tasktimelogs/{id}/resume', [TaskTimeLogsController::class, 'resume'])->name('tasktimelogs.resume');
+
+    // Tasktimelogs Search
+    Route::get('/tasktimelogs-search', function (Request $request) {
+        $search = $request->get('search');
+
+        // Perform the search logic
+        $tasktimelogs = Tasktimelogs::when($search, function ($query) use ($search) {
+            return $query->where('name', 'like', "%$search%");
+        })->paginate(10);
+
+        return view('tasktimelogs.tasktimelogs', compact('tasktimelogs', 'search'));
+    });
+
+    // Tasktimelogs Paginate
+    Route::get('/tasktimelogs-paginate', function (Request $request) {
+        // Retrieve the 'paginate' parameter from the URL (e.g., ?paginate=10)
+        $paginate = $request->input('paginate', 10); // Default to 10 if no paginate value is provided
+    
+        // Paginate the tasktimelogs based on the 'paginate' value
+        $tasktimelogs = Tasktimelogs::paginate($paginate); // Paginate with the specified number of items per page
+    
+        // Return the view with the paginated tasktimelogs
+        return view('tasktimelogs.tasktimelogs', compact('tasktimelogs'));
+    });
+
+    // Tasktimelogs Filter
+    Route::get('/tasktimelogs-filter', function (Request $request) {
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        // Default query for tasktimelogs
+        $query = Tasktimelogs::query();
+    
+        // Convert dates to Carbon instances for better comparison
+        $fromDate = $from ? Carbon::parse($from) : null;
+        $toDate = $to ? Carbon::parse($to) : null;
+    
+        // Check if both 'from' and 'to' dates are provided
+        if ($from && $to) {
+            // If 'from' and 'to' are the same day (today)
+            if ($fromDate->isToday() && $toDate->isToday()) {
+                // Return results from today and include the 'from' date's data
+                $tasktimelogs = $query->whereDate('created_at', '=', Carbon::today())
+                               ->orderBy('created_at', 'desc')
+                               ->paginate(10);
+            } else {
+                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
+                if ($fromDate->gt($toDate)) {
+                    $tasktimelogs = $query->whereBetween('created_at', [$toDate, $fromDate])
+                                   ->orderBy('created_at', 'asc')  // Ascending order
+                                   ->paginate(10);
+                } else {
+                    // Otherwise, order descending (from 'from' to 'to')
+                    $tasktimelogs = $query->whereBetween('created_at', [$fromDate, $toDate])
+                                   ->orderBy('created_at', 'desc')  // Descending order
+                                   ->paginate(10);
+                }
+            }
+        } else {
+            // If 'from' or 'to' are missing, show all tasktimelogs without filtering
+            $tasktimelogs = $query->paginate(10);  // Paginate results
+        }
+    
+        // Return the view with tasktimelogs and the selected date range
+        return view('tasktimelogs.tasktimelogs', compact('tasktimelogs', 'from', 'to'));
     });
 
     // end...
