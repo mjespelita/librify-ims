@@ -15,8 +15,8 @@
         </div>
     
         <div class='form-group'>
-            <label for='name'>Workspaces_id</label>
-            <input type='text' class='form-control' id='workspaces_id' name='workspaces_id' value='{{ $item->workspaces_id }}' required>
+            {{-- <label for='name'>Workspaces_id</label> --}}
+            <input type='text' class='form-control' id='workspaces_id' hidden name='workspaces_id' value='{{ $item->workspaces_id }}' required>
         </div>
     
                 <button type='submit' class='btn btn-primary mt-3'>Update</button>

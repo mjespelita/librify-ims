@@ -201,6 +201,165 @@ h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
     background-color: #6c757d;
 }
 
+/* calendar */
+
+.calendar {
+    width: 100%;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.calendar-header button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+.day {
+    padding: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-weight: bold;
+}
+.today {
+    background:#F69639 !important;
+}
+.selected {
+    background: #FBC30E !important;
+    color: white;
+}
+
+
+.clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+.time-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+}
+.time-selector select {
+    padding: 5px;
+    font-size: 16px;
+}
+
+/* calendat */
+
+/* comment chat */
+
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 100%;
+    margin: auto;
+    height: 45vh;
+    overflow-x: scroll
+}
+.chat-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 75%;
+}
+.mine {
+    background-color: #dbdbdb;
+    color: rgb(0, 0, 0);
+    align-self: flex-start;
+}
+.other {
+    background-color: #f1f1f1;
+    color: black;
+    align-self: flex-end;
+}
+.mine-name {
+    background-color: none;
+    color: rgb(0, 0, 0);
+    align-self: flex-start;
+}
+.other-name {
+    background-color: none;
+    color: black;
+    align-self: flex-end;
+}
+.no-messages {
+    text-align: center;
+    color: gray;
+}
+
+
+.upload-icon {
+    width: 50px;
+    height: 50px;
+    background: #007bff;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    margin: 10px auto;
+}
+.upload-icon:hover {
+    background: #0056b3;
+}
+#fileInput {
+    display: block;
+}
+#image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+.preview-container {
+    position: relative;
+    display: inline-block;
+}
+.preview-container img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 2px solid #ddd;
+}
+.remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
 /* .table>:not(caption)>*>* {
     border: none !important;
 } */

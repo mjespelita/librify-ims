@@ -127,6 +127,7 @@ Route::middleware([
     Route::get('/my-damaged-items/{userId}', [RandomController::class, 'myDamagedItems']);
     Route::get('/view-my-damaged-items-on-site/{siteId}', [RandomController::class, 'viewMyDamagedItemsOnSite']);
     Route::get('/my-sites', [RandomController::class, 'mySites']);
+    Route::get('/my-tasks', [TasksController::class, 'myTasks']);
 
     // API
 
@@ -1417,8 +1418,8 @@ Route::middleware([
     Route::get('/edit-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'edit'])->name('taskassignments.edit');
     Route::get('/show-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'show'])->name('taskassignments.show');
     Route::get('/delete-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'delete'])->name('taskassignments.delete');
-    Route::get('/destroy-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'destroy'])->name('taskassignments.destroy');
-    Route::post('/store-taskassignments', [TaskassignmentsController::class, 'store'])->name('taskassignments.store');
+    Route::get('/destroy-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'destroy'])->name('taskassignments.destroy')->middleware(AdminMiddleware::class);
+    Route::post('/store-taskassignments', [TaskassignmentsController::class, 'store'])->name('taskassignments.store')->middleware(AdminMiddleware::class);
     Route::post('/update-taskassignments/{taskassignmentsId}', [TaskassignmentsController::class, 'update'])->name('taskassignments.update');
     Route::post('/taskassignments-delete-all-bulk-data', [TaskassignmentsController::class, 'bulkDelete']);
     Route::post('/taskassignments-move-to-trash-all-bulk-data', [TaskassignmentsController::class, 'bulkMoveToTrash']);
@@ -1513,6 +1514,7 @@ Route::middleware([
 
     Route::put('/tasktimelogs/{id}/pause', [TaskTimeLogsController::class, 'update'])->name('tasktimelogs.pause');
     Route::put('/tasktimelogs/{id}/resume', [TaskTimeLogsController::class, 'resume'])->name('tasktimelogs.resume');
+    Route::put('/tasktimelogs/{id}/stop', [TaskTimeLogsController::class, 'stop'])->name('tasktimelogs.stop');
 
     // Tasktimelogs Search
     Route::get('/tasktimelogs-search', function (Request $request) {

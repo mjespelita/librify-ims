@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Tasktimelogs};
+use App\Models\{Logs, Tasks, Tasktimelogs};
 use App\Http\Requests\StoreTasktimelogsRequest;
 use App\Http\Requests\UpdateTasktimelogsRequest;
 use Carbon\Carbon;
@@ -80,7 +80,7 @@ class TasktimelogsController extends Controller {
         // Logs::create(['log' => Auth::user()->name.' started a new Tasktimelog for Task ID: '.$request->tasks_id]);
         /******************************************************** */
 
-        return back()->with('success', 'Task Timer Started Successfully!');
+        return back();
     }
 
 
@@ -135,7 +135,7 @@ class TasktimelogsController extends Controller {
             'status'       => 'paused', // Update status
         ]);
 
-        return back()->with('success', 'Timer Paused!');
+        return back();
     }
 
     public function resume($id)
@@ -154,8 +154,42 @@ class TasktimelogsController extends Controller {
             'status'     => 'running', // Update status
         ]);
 
-        return back()->with('success', 'Timer Resumed!');
+        return back();
     }
+
+    public function stop($id)
+    {
+        $taskTimeLog = Tasktimelogs::where('tasks_id', $id)
+            ->whereNull('stop_time') // Ensure it's not already stopped
+            ->first();
+
+        if (!$taskTimeLog) {
+            return back()->with('error', 'No active timer to stop.');
+        }
+
+        $latestElapsedTime = $taskTimeLog->elapsed_time;
+        $startTime = Carbon::parse($taskTimeLog->start_time);
+        $now = Carbon::now();
+
+        $diffInSeconds = $startTime->diffInSeconds($now); // Total time from start to stop
+        $finalElapsedTime = $latestElapsedTime + $diffInSeconds;
+
+        $taskTimeLog->update([
+            'stop_time'   => $now, // Record stop time
+            'pause_time'  => null, // Clear pause time
+            'elapsed_time' => $finalElapsedTime, // Save total elapsed time
+            'status'      => 'stopped', // Update status
+        ]);
+
+        // update task status
+
+        Tasks::where('id', $id)->update([
+            'status' => 'completed'
+        ]);
+
+        return back();
+    }
+
 
     /**
      * Show the form for deleting the specified resource.

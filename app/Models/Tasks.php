@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tasks extends Model
 {
     /** @use HasFactory<\Database\Factories\TasksFactory> */
-protected $fillable = ["name","status","projects_id","projects_workspaces_id","isTrash"];
+protected $fillable = ["name","status","projects_id","projects_workspaces_id","isTrash","deadline", "priority", "isScheduled"];
     use HasFactory;
 
     public function projects()

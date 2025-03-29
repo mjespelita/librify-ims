@@ -23,7 +23,12 @@ class UpdateTasksRequest extends FormRequest
     {
         return [
             //
-'name' => 'required','status' => 'required','projects_id' => 'required','projects_workspaces_id' => 'required',
+'name' => 'required',
+'status' => 'required',
+'projects_id' => 'required',
+'projects_workspaces_id' => 'required',
+'deadline' => 'required',
+'priority' => 'required',
         ];
     }
 }

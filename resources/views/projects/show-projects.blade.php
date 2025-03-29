@@ -59,26 +59,70 @@
                     <h5>Create a task</h5>
                     <form action='{{ route('tasks.store') }}' method='POST'>
                         @csrf
+
+                        <div class='form-group my-3'>
+                            {{-- <label for='name'>Name</label> --}}
+                            <select id="ampmPicker" class="form-control" name="isScheduled">
+                                <option value="0">Not - Scheduled</option>
+                                <option value="1">Scheduled</option>
+                            </select>
+                        </div>
                         
-                        <div class='form-group'>
+                        <div class='form-group my-3'>
                             <label for='name'>Name</label>
                             <input type='text' class='form-control' id='name' name='name' required>
                         </div>
                     
-                        <div class='form-group'>
+                        <div class='form-group my-3'>
                             <label for='name'>Status</label>
                             <select name="status" class="form-control" id="">
                                 <option value="pending">Pending</option>
                                 <option value="completed">Completed</option>
                             </select>
                         </div>
+
+                        <div class='form-group my-3 my-3'>
+                            <label for='name'>Select Priority</label> <br> <br>
+                            <input type='radio' id='priority' name='priority' value="low" checked> Low
+                            <input type='radio' id='priority' name='priority' value="high"> High
+                        </div>
+
+                        {{-- calendar --}}
+                        
+                        <div class="calendar">
+                            <div class="calendar-header">
+                                <button type="button" class="btn btn-secondary prevMonth" >&#10094;</button>
+                                <h2 id="month-year"></h2>
+                                <button type="button" class="btn btn-secondary nextMonth" >&#10095;</button>
+                            </div>
+                            <div class="weekdays">
+                                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                            </div>
+                            <div class="days" id="calendar-days"></div>
+                        </div>
+                        
+                        <div class="clock-container">
+                            <label>Select Time:</label>
+                            <div class="time-selector">
+                                <select id="hourPicker"></select> :
+                                <select id="minutePicker"></select>
+                                <select id="ampmPicker">
+                                    <option value="AM">AM</option>
+                                    <option value="PM">PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class='form-group my-3'>
+                            <input type='datetime-local' class='form-control deadline' hidden id='deadline' name='deadline' required>
+                        </div>
                     
-                        <div class='form-group'>
+                        <div class='form-group my-3'>
                             {{-- <label for='name'>Projects_id</label> --}}
                             <input type='text' class='form-control' id='projects_id' value="{{ $item->id }}" hidden name='projects_id' required>
                         </div>
                     
-                        <div class='form-group'>
+                        <div class='form-group my-3'>
                             {{-- <label for='name'>Projects_workspaces_id</label> --}}
                             <input type='text' class='form-control' id='projects_workspaces_id' value="{{ $item->workspaces->id ?? '' }}" hidden name='projects_workspaces_id' required>
                         </div>
@@ -157,6 +201,9 @@
                                     <th>Name</th>
                                     <th>Assignees</th>
                                     <th>Status</th>
+                                    <th>Deadline</th>
+                                    <th>Priority</th>
+                                    <th>Scheduled</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -176,7 +223,31 @@
                                                 <b>No Collaborators</b>
                                             @endforelse    
                                         </td>
-                                        <td>{{ $task->status }}</td>
+                                        <td>
+                                            @if($task->status === 'completed')
+                                                <b class="text-success"><i class="fas fa-check"></i></b>
+                                            @else
+                                                <b class="text-danger"><i class="fas fa-times"></i></b>
+                                            @endif
+                                        </td>
+                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDay($task->deadline) }}</td>
+                                        <td>
+                                            {{-- <b class="{{ $task->priority === 'high' ? 'text-danger' : 'text-success' }}">
+                                                {{ ucfirst($task->priority) }}
+                                            </b> --}}
+
+                                            
+                                            @if($task->priority === 'high')
+                                                <b class="text-danger"><i class="fas fa-arrow-up"></i></b>
+                                            @else
+                                                <b class="text-primary"><i class="fas fa-arrow-down"></i></b>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <b>
+                                                {{ $task->isScheduled === 1 ? "Yes" : "No" }}
+                                            </b>
+                                        </td>
                                         <td>
                                             <a href='{{ route('tasks.show', $task->id) }}'><i class='fas fa-eye text-success'></i></a>
                                             <a href='{{ route('tasks.edit', $task->id) }}'><i class='fas fa-edit text-info'></i></a>

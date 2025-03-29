@@ -23,7 +23,12 @@ class StoreTaskassignmentsRequest extends FormRequest
     {
         return [
             //
-'tasks_id' => 'required','tasks_projects_id' => 'required','tasks_projects_workspaces_id' => 'required','users_id' => 'required','role' => 'required',
+'tasks_id' => 'required',
+'tasks_projects_id' => 'required',
+'tasks_projects_workspaces_id' => 'required',
+'users_id' => 'required',
+'role' => 'required',
+'isLeadAssignee' => '',
         ];
     }
 }

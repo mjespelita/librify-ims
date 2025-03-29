@@ -106,8 +106,8 @@
                     <b>Task Management</b>
                 </div>
 
-                <a href='{{ url('tasks') }}' 
-                class='{{ request()->is('tasks', 'trash-tasks', 'create-tasks', 'show-tasks/*', 'edit-tasks/*', 'delete-tasks/*', 'tasks-search*') ? 'active' : '' }}'>
+                <a href='{{ url('my-tasks') }}' 
+                class='{{ request()->is('my-tasks', 'show-tasks/*', 'trash-my-tasks', 'create-my-tasks', 'show-my-tasks/*', 'edit-my-tasks/*', 'delete-my-tasks/*', 'my-tasks-search*') ? 'active' : '' }}'>
                 <i class='fas fa-tasks'></i> My Tasks
                 </a>
 

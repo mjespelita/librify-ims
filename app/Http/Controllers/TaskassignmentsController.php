@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Taskassignments};
+use App\Models\{Logs, Taskassignments, Tasks, Tasktimelogs};
 use App\Http\Requests\StoreTaskassignmentsRequest;
 use App\Http\Requests\UpdateTaskassignmentsRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -51,13 +52,70 @@ class TaskassignmentsController extends Controller {
      */
     public function store(StoreTaskassignmentsRequest $request)
     {
-        Taskassignments::create(['tasks_id' => $request->tasks_id,'tasks_projects_id' => $request->tasks_projects_id,'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,'users_id' => $request->users_id,'role' => $request->role]);
+        // logic
+        /**
+         * if i am the lead assignee and the task is HIGH Priority
+         * then loop all through the tasks assignments table
+         * and if the tasks_id->task is not a priority
+         * then query the task_time_logs table and pause the timer of that task
+         */
+
+        $assignee = $request->users_id;
+        $isHighPriority = (Tasks::where('id', $request->tasks_id)->value('priority') === 'high') ? true : false;
+
+        $isLeadAssignee = $request->has('isLeadAssignee') ? 1 : 0;
+
+        if ($isLeadAssignee) {
+            if ($isHighPriority) {
+                $usersTaskAssignments = Taskassignments::where('users_id', $assignee)->where('isLeadAssignee', 1)->get();
+                foreach ($usersTaskAssignments as $key => $value) {
+                    // $isOldTasksLowPriority = (Tasks::where('id', $value['tasks_id'])->where('status', 'pending')->value('priority') == 'high') ? 1 : 0;
+                    $priority = Tasks::where('id', $value['tasks_id'])->where('status', 'pending')->value('priority');
+                    if ($priority === 'low') {
+                        $taskTimeLog = Tasktimelogs::where('tasks_id', $value['tasks_id'])
+                            ->whereNull('stop_time')
+                            ->whereNull('pause_time')
+                            ->first();
+    
+                        if (!$taskTimeLog) {
+                            return back()->with('error', 'No active timer to pause.');
+                        }   
+    
+                        $latestElapseTime = $taskTimeLog->elapsed_time;
+    
+                        $startTime = Carbon::parse($taskTimeLog->start_time); // Assuming this is a Carbon instance
+                        $now = Carbon::now();
+    
+                        $diffInSeconds = $startTime->diffInSeconds($now);
+    
+                        $minus = $diffInSeconds - $latestElapseTime;
+    
+                        $final = $latestElapseTime + $minus;
+    
+                        $taskTimeLog->update([
+                            'pause_time'   => now(),
+                            'elapsed_time' => $final, // Save total elapsed time
+                            'status'       => 'paused', // Update status
+                        ]);
+                    }
+                }
+            }
+        }
+
+        Taskassignments::create([
+            'tasks_id' => $request->tasks_id,
+            'tasks_projects_id' => $request->tasks_projects_id,
+            'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,
+            'users_id' => $request->users_id,
+            'role' => $request->role,
+            'isLeadAssignee' => $isLeadAssignee
+        ]);
 
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' created a new Taskassignments '.'"'.$request->name.'"']);
         /******************************************************** */
 
-        return back()->with('success', 'Taskassignments Added Successfully!');
+        return back();
     }
 
     /**
@@ -92,7 +150,7 @@ class TaskassignmentsController extends Controller {
 
         Taskassignments::where('id', $taskassignmentsId)->update(['tasks_id' => $request->tasks_id,'tasks_projects_id' => $request->tasks_projects_id,'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,'users_id' => $request->users_id,'role' => $request->role]);
 
-        return back()->with('success', 'Taskassignments Updated Successfully!');
+        return back();
     }
 
     /**
@@ -111,6 +169,38 @@ class TaskassignmentsController extends Controller {
     public function destroy(Taskassignments $taskassignments, $taskassignmentsId)
     {
 
+        $isLeadAssignee = Taskassignments::where('id', $taskassignmentsId)->value('isLeadAssignee');
+        $taskId = Taskassignments::where('id', $taskassignmentsId)->value('tasks_id');
+        $userId = Taskassignments::where('id', $taskassignmentsId)->value('users_id');
+        
+        $isHighPriority = Tasks::where('id', $taskId)->value('priority');
+
+        if ($isLeadAssignee) {
+            if ($isHighPriority) {
+                $usersTaskAssignments = Taskassignments::where('users_id', $userId)->where('isLeadAssignee', 1)->get();
+                foreach ($usersTaskAssignments as $key => $value) {
+                    // $isOldTasksLowPriority = (Tasks::where('id', $value['tasks_id'])->where('status', 'pending')->value('priority') == 'high') ? 1 : 0;
+                    $priority = Tasks::where('id', $value['tasks_id'])->where('status', 'pending')->value('priority');
+                    if ($priority === 'low') {
+                        $taskTimeLog = Tasktimelogs::where('tasks_id', $value['tasks_id'])
+                            ->whereNotNull('pause_time')
+                            ->whereNull('stop_time')
+                            ->first();
+
+                        if ($taskTimeLog) {
+
+                            $taskTimeLog->update([
+                                'pause_time' => null,   // Clear pause time
+                                'status'     => 'running', // Update status
+                            ]);
+                        }
+
+                    }
+                    // echo $priority;
+                }
+            }
+        }
+
         /* Log ************************************************** */
         $oldName = Taskassignments::where('id', $taskassignmentsId)->value('name');
         // Logs::create(['log' => Auth::user()->name.' deleted a Taskassignments "'.$oldName.'".']);
@@ -118,7 +208,7 @@ class TaskassignmentsController extends Controller {
 
         Taskassignments::where('id', $taskassignmentsId)->delete();
 
-        return back()->with('success', 'Assignee Removed Successfully!');
+        return back();
     }
 
     public function bulkDelete(Request $request) {

@@ -31,9 +31,9 @@ ok - what is the most requested items
 
 ok - stat of most installed items
 
-search through serial numbers
+ok - search through serial numbers
 
-description of damages
+ok - description of damages
 
 ok - if admin mag add?
 
@@ -52,3 +52,16 @@ edit-onsites/2 - remove and add
 edit-damages/2 - remove and add
 
 serial number condition
+
+March 27, 2025 ----------------------------------
+
+ok - lead assignee
+ok - comment section add image
+ok - priority - optional
+
+schedule repeated
+auto - start
+Grading of task quality
+
+fix the my-task page of employee dashboard face
+edit the edit task - priority update

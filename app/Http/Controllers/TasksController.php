@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Tasks};
+use App\Models\{Logs, Taskassignments, Tasks};
 use App\Http\Requests\StoreTasksRequest;
 use App\Http\Requests\UpdateTasksRequest;
 use Illuminate\Http\Request;
@@ -16,6 +16,13 @@ class TasksController extends Controller {
     {
         return view('tasks.tasks', [
             'tasks' => Tasks::where('isTrash', '0')->paginate(10)
+        ]);
+    }
+
+    public function myTasks()
+    {
+        return view('technicians.my-tasks',[
+            'tasks' => Taskassignments::where('users_id', Auth::user()->id)->paginate(10)
         ]);
     }
 
@@ -51,7 +58,15 @@ class TasksController extends Controller {
      */
     public function store(StoreTasksRequest $request)
     {
-        Tasks::create(['name' => $request->name,'status' => $request->status,'projects_id' => $request->projects_id,'projects_workspaces_id' => $request->projects_workspaces_id]);
+        Tasks::create([
+            'name' => $request->name,
+            'status' => $request->status,
+            'projects_id' => $request->projects_id,
+            'projects_workspaces_id' => $request->projects_workspaces_id,
+            'deadline' => $request->deadline,
+            'priority' => $request->priority,
+            'isScheduled' => $request->isScheduled,
+        ]);
 
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' created a new Tasks '.'"'.$request->name.'"']);
@@ -90,7 +105,14 @@ class TasksController extends Controller {
         // Logs::create(['log' => Auth::user()->name.' updated a Tasks from "'.$oldName.'" to "'.$request->name.'".']);
         /******************************************************** */
 
-        Tasks::where('id', $tasksId)->update(['name' => $request->name,'status' => $request->status,'projects_id' => $request->projects_id,'projects_workspaces_id' => $request->projects_workspaces_id]);
+        Tasks::where('id', $tasksId)->update([
+            'name' => $request->name,
+            'status' => $request->status,
+            'projects_id' => $request->projects_id,
+            'projects_workspaces_id' => $request->projects_workspaces_id,
+            'deadline' => $request->deadline,
+            'priority' => $request->priority,
+        ]);
 
         return back()->with('success', 'Tasks Updated Successfully!');
     }

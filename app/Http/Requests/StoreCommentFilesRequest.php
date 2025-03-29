@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCommentsRequest extends FormRequest
+class StoreCommentFilesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -23,12 +23,6 @@ class StoreCommentsRequest extends FormRequest
     {
         return [
             //
-            'comment' => 'required',
-            'tasks_id' => 'required',
-            'tasks_projects_id' => 'required',
-            'tasks_projects_workspaces_id' => 'required',
-            'users_id' => 'required',
-            'files.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
 }

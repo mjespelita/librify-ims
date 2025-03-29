@@ -4,11 +4,11 @@
 @section('content')
     <div class='row'>
         <div class='col-lg-6 col-md-6 col-sm-12'>
-            <h1>All Projects</h1>
+            <h1>All Tasks</h1>
         </div>
         <div class='col-lg-6 col-md-6 col-sm-12' style='text-align: right;'>
-            <a href='{{ url('trash-projects') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\Projects::where('isTrash', '1')->count() }}</span></button></a>
-            {{-- <a href='{{ route('projects.create') }}'><button class='btn btn-success'><i class='fas fa-plus'></i> Add Projects</button></a> --}}
+            {{-- <a href='{{ url('trash-tasks') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\Tasks::where('isTrash', '1')->count() }}</span></button></a>
+            <a href='{{ route('tasks.create') }}'><button class='btn btn-success'><i class='fas fa-plus'></i> Add Tasks</button></a> --}}
         </div>
     </div>
     
@@ -17,7 +17,7 @@
             <div class='row'>
                 <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                     <div class='row'>
-                        <div class='col-4'>
+                        {{-- <div class='col-4'>
                             <button type='button' class='btn btn-outline-secondary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
                                 Action
                             </button>
@@ -29,9 +29,9 @@
                                     <i class='fa fa-trash'></i> <span class='text-danger'>Delete Permanently</span> <br> <small>(this action cannot be undone)</small>
                                 </a>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class='col-8'>
-                            <form action='{{ url('/projects-paginate') }}' method='get'>
+                            <form action='{{ url('/tasks-paginate') }}' method='get'>
                                 <div class='input-group'>
                                     <input type='number' name='paginate' class='form-control' placeholder='Paginate' value='{{ request()->get('paginate', 10) }}'>
                                     <div class='input-group-append'>
@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
-                    <form action='{{ url('/projects-filter') }}' method='get'>
+                    <form action='{{ url('/tasks-filter') }}' method='get'>
                         <div class='input-group'>
                             <input type='date' class='form-control' id='from' name='from' required> 
                             <b class='pt-2'>- to -</b>
@@ -58,7 +58,7 @@
                 </div>
                 <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                     <!-- Search Form -->
-                    <form action='{{ url('/projects-search') }}' method='GET'>
+                    <form action='{{ url('/tasks-search') }}' method='GET'>
                         <div class='input-group'>
                             <input type='text' name='search' value='{{ request()->get('search') }}' class='form-control' placeholder='Search...'>
                             <div class='input-group-append'>
@@ -76,28 +76,32 @@
                             <th scope='col'>
                             <input type='checkbox' name='' id='' class='checkAll'>
                             </th>
-                            <th>#</th>
                             <th>Name</th>
+                            <th>Status</th>
+                            <th>Projects</th>
                             <th>Workspace</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse($projects as $item)
+                        @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->paginate(10) as $item)
                             <tr>
                                 <th scope='row'>
                                     <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
                                 </th>
-                                <td>{{ $item->id }}</td>
-                                <td>{{ $item->name }}</td>
+                                <td>{{ $item->tasks->name ?? "no data"  }}</td>
+                                <td>{{ $item->tasks->status ?? "no data" }}</td>
                                 <td>
-                                    <a class="fw-bold text-primary nav-link" href="{{ url('show-workspaces/'.($item->workspaces->id ?? "no data")) }}">{{ $item->workspaces->name ?? "no data" }}</a>
+                                    <b>{{ $item->projects->name ?? "no data" }}</b>
                                 </td>
                                 <td>
-                                    <a href='{{ route('projects.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a>
-                                    <a href='{{ route('projects.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a>
-                                    <a href='{{ route('projects.delete', $item->id) }}'><i class='fas fa-trash text-danger'></i></a>
+                                    <b>{{ $item->workspaces->name ?? "no data" }}</b>
+                                </td>
+                                <td>
+                                    <a href='{{ route('tasks.show', $item->tasks->id ?? "no data") }}'><i class='fas fa-eye text-success'></i></a>
+                                    {{-- <a href='{{ route('tasks.edit', $item->tasks->id ?? "no data") }}'><i class='fas fa-edit text-info'></i></a>
+                                    <a href='{{ route('tasks.delete', $item->tasks->id ?? "no data") }}'><i class='fas fa-trash text-danger'></i></a> --}}
                                 </td>
                             </tr>
                         @empty
@@ -111,7 +115,7 @@
         </div>
     </div>
 
-    {{ $projects->links('pagination::bootstrap-5') }}
+    {{ $tasks->links('pagination::bootstrap-5') }}
 
     <script src='{{ url('assets/jquery/jquery.min.js') }}'></script>
     <script>
@@ -132,7 +136,7 @@
                     array.push($(this).attr('data-id'));
                 });
 
-                $.post('/projects-delete-all-bulk-data', {
+                $.post('/tasks-delete-all-bulk-data', {
                     ids: array,
                     _token: $("meta[name='csrf-token']").attr('content')
                 }, function (res) {
@@ -146,7 +150,7 @@
                     array.push($(this).attr('data-id'));
                 });
 
-                $.post('/projects-move-to-trash-all-bulk-data', {
+                $.post('/tasks-move-to-trash-all-bulk-data', {
                     ids: array,
                     _token: $("meta[name='csrf-token']").attr('content')
                 }, function (res) {

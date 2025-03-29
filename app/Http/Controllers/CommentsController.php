@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Comments};
+use App\Models\{CommentFiles, Logs, Comments};
 use App\Http\Requests\StoreCommentsRequest;
 use App\Http\Requests\UpdateCommentsRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Smark\Smark\File;
 
 class CommentsController extends Controller {
     /**
@@ -51,13 +52,41 @@ class CommentsController extends Controller {
      */
     public function store(StoreCommentsRequest $request)
     {
-        Comments::create(['comment' => $request->comment,'tasks_id' => $request->tasks_id,'tasks_projects_id' => $request->tasks_projects_id,'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,'users_id' => $request->users_id]);
+        $hasFile = 0;
+        $allData = $request->all(); // Get all request data
+
+        if (isset($allData['files'])) {
+            $hasFile = 1;
+        }
+        $newComment = Comments::create([
+            'comment' => $request->comment,
+            'tasks_id' => $request->tasks_id,
+            'tasks_projects_id' => $request->tasks_projects_id,
+            'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,
+            'users_id' => $request->users_id,
+            'hasImage' => $hasFile,
+        ]);
+
+
+        if ($hasFile) {
+            
+            $files = $allData['files']; // Get the files from request data
+
+            foreach ($files as $file) {
+                File::upload($file, 'files');
+                $filename = File::$filename;
+                CommentFiles::create([
+                    'file' => $filename,
+                    'comments_id' => $newComment->id,
+                ]);
+            }
+        }
 
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' created a new Comments '.'"'.$request->name.'"']);
         /******************************************************** */
 
-        return back()->with('success', 'Comments Added Successfully!');
+        return back();
     }
 
     /**
@@ -92,7 +121,7 @@ class CommentsController extends Controller {
 
         Comments::where('id', $commentsId)->update(['comment' => $request->comment,'tasks_id' => $request->tasks_id,'tasks_projects_id' => $request->tasks_projects_id,'tasks_projects_workspaces_id' => $request->tasks_projects_workspaces_id,'users_id' => $request->users_id]);
 
-        return back()->with('success', 'Comments Updated Successfully!');
+        return back();
     }
 
     /**

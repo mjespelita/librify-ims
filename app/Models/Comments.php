@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Comments extends Model
 {
     /** @use HasFactory<\Database\Factories\CommentsFactory> */
-protected $fillable = ["comment","tasks_id","tasks_projects_id","tasks_projects_workspaces_id","users_id","isTrash"];
+protected $fillable = ["comment","tasks_id","tasks_projects_id","tasks_projects_workspaces_id","users_id","hasImage", "isTrash"];
     use HasFactory;
 
     public function tasks()
@@ -29,5 +29,10 @@ protected $fillable = ["comment","tasks_id","tasks_projects_id","tasks_projects_
     public function users()
     {
         return $this->belongsTo(User::class, 'users_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(CommentFiles::class);
     }
 }
