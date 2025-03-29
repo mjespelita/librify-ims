@@ -171,24 +171,24 @@
                                         <td>{{ $project->name }}</td>
                                         <td>
                                             @php
-                                            $displayedUsers = [];
-                                        @endphp
+                                                $displayedUsers = [];
+                                            @endphp
                                         
-                                        @forelse (App\Models\Taskassignments::where('tasks_projects_id', $project->id)->get() as $projectUser)
-                                            @if (!empty($projectUser->users?->id) && !in_array($projectUser->users->id, $displayedUsers))
-                                                <img class="mb-2" 
-                                                     src="{{ $projectUser->users?->profile_photo_path ? url('/storage/' . $projectUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" 
-                                                     height="40" 
-                                                     width="40" 
-                                                     style="border-radius: 50%;" 
-                                                     alt="User Profile Photo">
-                                                @php
-                                                    $displayedUsers[] = $projectUser->users->id;
-                                                @endphp
-                                            @endif
-                                        @empty
-                                            <b>No Collaborators</b>
-                                        @endforelse
+                                            @forelse (App\Models\Taskassignments::where('tasks_projects_id', $project->id)->get() as $projectUser)
+                                                @if (!empty($projectUser->users?->id) && !in_array($projectUser->users->id, $displayedUsers))
+                                                    <img class="mb-2" 
+                                                        src="{{ $projectUser->users?->profile_photo_path ? url('/storage/' . $projectUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" 
+                                                        height="40" 
+                                                        width="40" 
+                                                        style="border-radius: 50%;" 
+                                                        alt="User Profile Photo">
+                                                    @php
+                                                        $displayedUsers[] = $projectUser->users->id;
+                                                    @endphp
+                                                @endif
+                                            @empty
+                                                <b>No Collaborators</b>
+                                            @endforelse
                                         
                                         </td>
                                         <td>{{ App\Models\Tasks::where('projects_id', $project->id)->count() }}</td>

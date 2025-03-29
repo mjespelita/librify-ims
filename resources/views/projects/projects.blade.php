@@ -69,45 +69,117 @@
                 </div>
             </div>
 
-            <div class='table-responsive'>
-                <table class='table table-striped'>
-                    <thead>
-                        <tr>
-                            <th scope='col'>
-                            <input type='checkbox' name='' id='' class='checkAll'>
-                            </th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Workspace</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+            <style>
+                .project-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 20px;
+                    padding: 20px;
+                }
+            
+                .project-card {
+                    background: #fff;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    border-left: 5px solid #007bff;
+                    transition: 0.3s;
+                    position: relative;
+                }
+            
+                .project-header {
+                    font-weight: bold;
+                    font-size: 18px;
+                    margin-bottom: 10px;
+                }
+            
+                .project-info {
+                    font-size: 14px;
+                    color: #666;
+                    margin-bottom: 8px;
+                }
+            
+                .project-collaborators {
+                    display: flex;
+                    gap: 5px;
+                    flex-wrap: wrap;
+                    margin-bottom: 8px;
+                }
+            
+                .project-collaborators img {
+                    height: 35px;
+                    width: 35px;
+                    border-radius: 50%;
+                    border: 2px solid #ddd;
+                }
+            
+                .project-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    margin-top: auto;
+                }
+            
+                .project-actions a {
+                    text-decoration: none;
+                    font-size: 18px;
+                    color: #007bff;
+                    transition: 0.3s;
+                }
+            
+                .project-actions a:hover {
+                    color: #0056b3;
+                }
+            </style>
+            
+            <div class="project-grid">
+                @forelse($projects as $item)
+                    <div class="project-card">
+                        <div class="project-header">
+                            <input type="checkbox" class="check" data-id="{{ $item->id }}">
+                            {{ $item->name }}
+                        </div>
 
-                    <tbody>
-                        @forelse($projects as $item)
-                            <tr>
-                                <th scope='row'>
-                                    <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
-                                </th>
-                                <td>{{ $item->id }}</td>
-                                <td>{{ $item->name }}</td>
-                                <td>
-                                    <a class="fw-bold text-primary nav-link" href="{{ url('show-workspaces/'.($item->workspaces->id ?? "no data")) }}">{{ $item->workspaces->name ?? "no data" }}</a>
-                                </td>
-                                <td>
-                                    <a href='{{ route('projects.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a>
-                                    <a href='{{ route('projects.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a>
-                                    <a href='{{ route('projects.delete', $item->id) }}'><i class='fas fa-trash text-danger'></i></a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td>No Record...</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        <div class="project-info">
+                            <b>Created On:</b> {{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}
+                        </div>
+            
+                        <div class="project-info">
+                            <b>Workspace:</b> 
+                            <a class="fw-bold text-primary" href="{{ url('show-workspaces/'.($item->workspaces->id ?? 'no-data')) }}">
+                                {{ $item->workspaces->name ?? 'No Workspace' }}
+                            </a>
+                        </div>
+            
+                        <div class="project-info">
+                            <b>Collaborators:</b>
+                            <div class="project-collaborators">
+                                @php $displayedUsers = []; @endphp
+                                @forelse (App\Models\Taskassignments::where('tasks_projects_id', $item->id)->get() as $projectUser)
+                                    @if (!empty($projectUser->users?->id) && !in_array($projectUser->users->id, $displayedUsers))
+                                        <img src="{{ $projectUser->users->profile_photo_path ? url('/storage/' . $projectUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User">
+                                        @php $displayedUsers[] = $projectUser->users->id; @endphp
+                                    @endif
+                                @empty
+                                    <span>No Collaborators</span>
+                                @endforelse
+                            </div>
+                        </div>
+            
+                        <div class="project-actions">
+                            <a href="{{ route('projects.show', $item->id) }}"><i class="fas fa-eye text-success"></i></a>
+                            <a href="{{ route('projects.edit', $item->id) }}"><i class="fas fa-edit text-info"></i></a>
+                            <a href="{{ route('projects.delete', $item->id) }}"><i class="fas fa-trash text-danger"></i></a>
+                        </div>
+                    </div>
+                @empty
+                    <p>No Projects Found</p>
+                @endforelse
             </div>
+            
         </div>
     </div>
 

@@ -69,81 +69,189 @@
                 </div>
             </div>
 
-            <div class='table-responsive'>
-                <table class='table table-striped'>
-                    <thead>
-                        <tr>
-                            <th scope='col'>
-                            <input type='checkbox' name='' id='' class='checkAll'>
-                            </th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Projects</th>
-                            <th>Workspace</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+            <style>
+                .task-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 20px;
+                    padding: 20px;
+                }
+            
+                .task-card {
+                    background: #fff;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    padding: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    border-left: 5px solid #007bff;
+                    transition: 0.3s;
+                    position: relative;
+                }
+            
+                .task-header {
+                    font-weight: bold;
+                    font-size: 18px;
+                    margin-bottom: 10px;
+                }
+            
+                .task-info {
+                    font-size: 14px;
+                    color: #666;
+                    margin-bottom: 8px;
+                }
+            
+                .task-assignees {
+                    display: flex;
+                    gap: 5px;
+                    flex-wrap: wrap;
+                    margin-bottom: 8px;
+                }
+            
+                .task-assignees img {
+                    height: 35px;
+                    width: 35px;
+                    border-radius: 50%;
+                    border: 2px solid #ddd;
+                }
+            
+                .task-status {
+                    font-weight: bold;
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    display: inline-block;
+                    margin-bottom: 8px;
+                }
+            
+                .task-status.completed {
+                    background: #198754;
+                    color: white;
+                }
+            
+                .task-status.pending {
+                    background: #DC3545;
+                    color: white;
+                }
+            
+                .task-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    margin-top: auto;
+                }
+            
+                .task-actions a {
+                    text-decoration: none;
+                    font-size: 18px;
+                    color: #007bff;
+                    transition: 0.3s;
+                }
+            
+                .task-actions a:hover {
+                    color: #0056b3;
+                }
+            </style>
+            
+            <div class="task-grid">
+                @if (Auth::user()->role === "admin")
+                    @forelse($tasks as $item)
+                        <div class="task-card">
+                            <div class="task-header">
+                                <input type="checkbox" class="check" data-id="{{ $item->id }}">
+                                {{ $item->name }}
+                            </div>
+            
+                            <div class="task-info">
+                                <b>Project:</b> 
+                                <a class="fw-bold text-primary" href="{{ url('show-projects/'.($item->projects->id ?? 'no-data')) }}">
+                                    {{ $item->projects->name ?? 'No Project' }}
+                                </a>
+                            </div>
+            
+                            <div class="task-info">
+                                <b>Workspace:</b> 
+                                <a class="fw-bold text-primary" href="{{ url('show-workspaces/'.($item->workspaces->id ?? 'no-data')) }}">
+                                    {{ $item->workspaces->name ?? 'No Workspace' }}
+                                </a>
+                            </div>
 
-                    <tbody>
-                        @if (Auth::user()->role === "admin")
-                            @forelse($tasks as $item)
-                                <tr>
-                                    <th scope='row'>
-                                        <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
-                                    </th>
-                                    <td>{{ $item->id }}</td>
-                                    <td>{{ $item->name }}</td>
-                                    <td>{{ $item->status }}</td>
-                                    <td>
-                                        <a class="fw-bold nav-link text-primary" href="{{ url('show-projects/'.($item->projects->id ?? "no data")) }}">{{ $item->projects->name ?? "no data" }}</a>
-                                    </td>
-                                    <td>
-                                        <a class="fw-bold nav-link text-primary" href="{{ url('show-workspaces/'.($item->workspaces->id ?? "no data")) }}">{{ $item->workspaces->name ?? "no data" }}</a>
-                                    </td>
-                                    <td>
-                                        <a href='{{ route('tasks.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a>
-                                        <a href='{{ route('tasks.edit', $item->id) }}'><i class='fas fa-edit text-info'></i></a>
-                                        <a href='{{ route('tasks.delete', $item->id) }}'><i class='fas fa-trash text-danger'></i></a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td>No Record...</td>
-                                </tr>
-                            @endforelse
-                        @endif
+                            <div class="task-info">
+                                <b>Created On:</b> 
+                                {{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}
+                            </div>
+            
+                            <div class="task-info">
+                                <b>Assignees:</b>
+                                <div class="task-assignees">
+                                    @forelse (App\Models\Taskassignments::where('tasks_id', $item->id)->get() as $taskUser)
+                                        <img src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User">
+                                    @empty
+                                        <span>No Assignees</span>
+                                    @endforelse
+                                </div>
+                            </div>
+            
+                            <div class="task-status {{ $item->status === 'completed' ? 'completed' : 'pending' }}">
+                                <i class="fas {{ $item->status === 'completed' ? 'fa-check' : 'fa-hourglass' }}"></i>
+                                {{ ucfirst($item->status ?? 'No Status') }}
+                            </div>
+            
+                            <div class="task-actions">
+                                <a href="{{ route('tasks.show', $item->id) }}"><i class="fas fa-eye text-success"></i></a>
+                                <a href="{{ route('tasks.edit', $item->id) }}"><i class="fas fa-edit text-info"></i></a>
+                                <a href="{{ route('tasks.delete', $item->id) }}"><i class="fas fa-trash text-danger"></i></a>
+                            </div>
+                        </div>
+                    @empty
+                        <p>No Tasks Found</p>
+                    @endforelse
+                @endif
+            
+                @if (Auth::user()->role === "technician")
+                    @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->get() as $item)
+                        <div class="task-card">
+                            <div class="task-header">
+                                <input type="checkbox" class="check" data-id="{{ $item->tasks->id ?? '' }}">
+                                {{ $item->tasks->name ?? 'No Task' }}
+                            </div>
+            
+                            <div class="task-info">
+                                <b>Project:</b> 
+                                <a class="fw-bold text-primary" href="{{ url('show-projects/'.($item->projects->id ?? 'no-data')) }}">
+                                    {{ $item->projects->name ?? 'No Project' }}
+                                </a>
+                            </div>
+            
+                            <div class="task-info">
+                                <b>Workspace:</b> 
+                                <a class="fw-bold text-primary" href="{{ url('show-workspaces/'.($item->workspaces->id ?? 'no-data')) }}">
+                                    {{ $item->workspaces->name ?? 'No Workspace' }}
+                                </a>
+                            </div>
 
-                        @if (Auth::user()->role === "technician")
-                            @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->get() as $item)
-                                <tr>
-                                    <th scope='row'>
-                                        <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
-                                    </th>
-                                    <td>{{ $item->tasks->id ?? "no data" }}</td>
-                                    <td>{{ $item->tasks->name ?? "no data"  }}</td>
-                                    <td>{{ $item->tasks->status ?? "no data" }}</td>
-                                    <td>
-                                        <a class="fw-bold nav-link text-primary" href="{{ url('show-projects/'.($item->projects->id ?? "no data")) }}">{{ $item->projects->name ?? "no data" }}</a>
-                                    </td>
-                                    <td>
-                                        <a class="fw-bold nav-link text-primary" href="{{ url('show-workspaces/'.($item->workspaces->id ?? "no data")) }}">{{ $item->workspaces->name ?? "no data" }}</a>
-                                    </td>
-                                    <td>
-                                        <a href='{{ route('tasks.show', $item->tasks->id ?? "no data") }}'><i class='fas fa-eye text-success'></i></a>
-                                        <a href='{{ route('tasks.edit', $item->tasks->id ?? "no data") }}'><i class='fas fa-edit text-info'></i></a>
-                                        <a href='{{ route('tasks.delete', $item->tasks->id ?? "no data") }}'><i class='fas fa-trash text-danger'></i></a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td>No Record...</td>
-                                </tr>
-                            @endforelse
-                        @endif
-                    </tbody>
-                </table>
+                            <div class="task-info">
+                                <b>Created On:</b> 
+                                {{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}
+                            </div>
+            
+                            <div class="task-status {{ $item->status === 'completed' ? 'completed' : 'pending' }}">
+                                <i class="fas {{ $item->status === 'completed' ? 'fa-check' : 'fa-hourglass' }}"></i>
+                                {{ ucfirst($item->status ?? 'No Status') }}
+                            </div>
+            
+                            <div class="task-actions">
+                                <a href="{{ route('tasks.show', $item->tasks->id ?? '') }}"><i class="fas fa-eye text-success"></i></a>
+                                <a href="{{ route('tasks.edit', $item->tasks->id ?? '') }}"><i class="fas fa-edit text-info"></i></a>
+                                <a href="{{ route('tasks.delete', $item->tasks->id ?? '') }}"><i class="fas fa-trash text-danger"></i></a>
+                            </div>
+                        </div>
+                    @empty
+                        <p>No Tasks Found</p>
+                    @endforelse
+                @endif
             </div>
+            
         </div>
     </div>
 

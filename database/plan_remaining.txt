@@ -63,5 +63,5 @@ ok - schedule repeated
 auto - start
 Grading of task quality
 
-fix the my-task page of employee dashboard face
-edit the edit task - priority update
+ok - fix the my-task page of employee dashboard face
+ok - edit the edit task - priority update

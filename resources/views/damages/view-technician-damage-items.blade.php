@@ -30,7 +30,7 @@
                                 <tr>
                                     <td><a class="nav-link {{ request()->is('damages') ? 'fw-bold text-success' : '' }}" href="{{ url('/damages') }}">All</a></td>
                                 </tr>
-                                @forelse(App\Models\User::whereNot('role', 'admin')->get() as $user)
+                                @forelse(App\Models\User::where('role', 'technician')->get() as $user)
                                     <tr class="selectTechnicianSearchBarResult">
                                         <td class='{{ request()->is('view-technician-damage-items/'.$user->id) ? 'fw-bold text-success' : '' }}'><a class="nav-link" href="{{ url('/view-technician-damage-items/'.$user->id) }}">{{ $user->name }}</a></td>
                                     </tr>
