@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Tasks, Tasktimelogs};
+use App\Models\{Comments, Logs, Tasks, Tasktimelogs};
 use App\Http\Requests\StoreTasktimelogsRequest;
 use App\Http\Requests\UpdateTasktimelogsRequest;
 use Carbon\Carbon;
@@ -76,13 +76,28 @@ class TasktimelogsController extends Controller {
             'status' => 'running' // Set status to running
         ]);
 
+        $latestComment = Comments::where('tasks_id', $request->tasks_id)->latest()->first();
+
+        $tasksProjectsId = Tasks::where('id', $request->tasks_id)->value('projects_id');
+        $tasksWorkspaceId = Tasks::where('id', $request->tasks_id)->value('projects_workspaces_id');
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' ('.Auth::user()->role.') started the timer.',
+            'tasks_id' => $request->tasks_id,
+            'tasks_projects_id' => $tasksProjectsId,
+            'tasks_projects_workspaces_id' => $tasksWorkspaceId,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
+        ]);
+
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' started a new Tasktimelog for Task ID: '.$request->tasks_id]);
         /******************************************************** */
 
         return back();
     }
-
 
     /**
      * Display the specified resource.
@@ -135,6 +150,19 @@ class TasktimelogsController extends Controller {
             'status'       => 'paused', // Update status
         ]);
 
+        $latestComment = Comments::where('tasks_id', $id)->latest()->first();
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' ('.Auth::user()->role.') paused the timer.',
+            'tasks_id' => $latestComment->tasks_id,
+            'tasks_projects_id' => $latestComment->tasks_projects_id,
+            'tasks_projects_workspaces_id' => $latestComment->tasks_projects_workspaces_id,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
+        ]);
+
         return back();
     }
 
@@ -152,6 +180,19 @@ class TasktimelogsController extends Controller {
         $taskTimeLog->update([
             'pause_time' => null,   // Clear pause time
             'status'     => 'running', // Update status
+        ]);
+
+        $latestComment = Comments::where('tasks_id', $id)->latest()->first();
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' ('.Auth::user()->role.') resumed the timer.',
+            'tasks_id' => $latestComment->tasks_id,
+            'tasks_projects_id' => $latestComment->tasks_projects_id,
+            'tasks_projects_workspaces_id' => $latestComment->tasks_projects_workspaces_id,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
         ]);
 
         return back();
@@ -185,6 +226,19 @@ class TasktimelogsController extends Controller {
 
         Tasks::where('id', $id)->update([
             'status' => 'completed'
+        ]);
+
+        $latestComment = Comments::where('tasks_id', $id)->latest()->first();
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' ('.Auth::user()->role.') completed the task and stopped the timer.',
+            'tasks_id' => $latestComment['tasks_id'],
+            'tasks_projects_id' => $latestComment->tasks_projects_id,
+            'tasks_projects_workspaces_id' => $latestComment->tasks_projects_workspaces_id,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
         ]);
 
         return back();

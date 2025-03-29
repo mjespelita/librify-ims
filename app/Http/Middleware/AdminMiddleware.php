@@ -16,8 +16,8 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'technician') {
-            return redirect('/technician-dashboard');
+        if (Auth::user()->role === 'technician' || Auth::user()->role === 'employee') {
+            return redirect('/employee-dashboard');
         }
         return $next($request);
     }

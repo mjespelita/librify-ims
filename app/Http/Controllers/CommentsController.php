@@ -67,7 +67,6 @@ class CommentsController extends Controller {
             'hasImage' => $hasFile,
         ]);
 
-
         if ($hasFile) {
             
             $files = $allData['files']; // Get the files from request data

@@ -112,14 +112,20 @@
                             <tr>
                                 <th>Project</th>
                                 <td>
-                                    <a class="fw-bold nav-link text-primary" href="{{ url('/show-projects/'.($item->projects->id ?? "")) }}">{{ ($item->projects->name ?? "no data") }}</a>
+                                    <a class="fw-bold nav-link text-primary {{ Auth::user()->role !== 'admin' ? 'disabled-link' : '' }}" 
+                                        href="{{ Auth::user()->role === 'admin' ? url('/show-projects/'.($item->projects->id ?? '')) : '#' }}">
+                                         {{ $item->projects->name ?? 'No Data' }}
+                                     </a>
                                 </td>
                             </tr>
                         
                             <tr>
                                 <th>Workspace</th>
                                 <td>
-                                    <a class="fw-bold nav-link text-primary" href="{{ url('/show-workspaces/'.($item->workspaces->id ?? "")) }}">{{ ($item->workspaces->name ?? "no data") }}</a>
+                                    <a class="fw-bold nav-link text-primary {{ Auth::user()->role !== 'admin' ? 'disabled-link' : '' }}" 
+                                        href="{{ Auth::user()->role === 'admin' ? url('/show-workspaces/'.($item->workspaces->id ?? '')) : '#' }}">
+                                         {{ $item->workspaces->name ?? 'No Data' }}
+                                     </a>
                                 </td>
                             </tr>
 
@@ -129,7 +135,7 @@
                                 <th>Lead Assignee</th>
                                 <td>
                                     @forelse (App\Models\Taskassignments::where('tasks_id', $item->id)->where('isLeadAssignee', 1)->get() as $assignedUser)
-                                        <a href="{{ route('taskassignments.destroy', $assignedUser->id) }}"><img class="mb-2" src="{{ $assignedUser->users->profile_photo_path ? url('/storage/' . $assignedUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo"></a>
+                                        <a href="{{ route('taskassignments.destroy', $assignedUser->id) }}"><img class="mb-2" src="{{ $assignedUser->users?->profile_photo_path ? url('/storage/' . $assignedUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo"></a>
                                     @empty
                                         <b>No Lead Assignee</b>
                                     @endforelse
@@ -140,7 +146,7 @@
                                 <th>Supporting Members</th>
                                 <td>
                                     @forelse (App\Models\Taskassignments::where('tasks_id', $item->id)->where('isLeadAssignee', 0)->get() as $assignedUser)
-                                        <a href="{{ route('taskassignments.destroy', $assignedUser->id) }}"><img class="mb-2" src="{{ $assignedUser->users->profile_photo_path ? url('/storage/' . $assignedUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo"></a>
+                                        <a href="{{ route('taskassignments.destroy', $assignedUser->id) }}"><img class="mb-2" src="{{ $assignedUser->users?->profile_photo_path ? url('/storage/' . $assignedUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo"></a>
                                     @empty
                                         <b>No Supporting Members</b>
                                     @endforelse
@@ -258,11 +264,11 @@
                         @forelse(App\Models\Comments::where('tasks_id', $item->id)->with('files')->get() as $comment)
                             @php $isMine = auth()->id() == $comment->users_id; @endphp
                             <img class="mb-2 {{ $isMine ? 'mine' : 'other' }}" 
-                                src="{{ $comment->users->profile_photo_path ? url('/storage/' . $comment->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" 
+                                src="{{ $comment->users?->profile_photo_path ? url('/storage/' . $comment->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" 
                                 height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
                             
                             <small class="{{ $isMine ? 'mine-name' : 'other-name' }}">
-                                {{ $comment->users->name ?? 'no data' }} - {{ $comment->created_at->diffForHumans() }}
+                                {{ $comment->users?->name ?? 'no data' }} - {{ $comment->created_at->diffForHumans() }}
                             </small>
 
                             <div class='chat-bubble {{ $isMine ? 'mine' : 'other' }}'>

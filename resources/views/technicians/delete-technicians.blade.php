@@ -2,7 +2,7 @@
 @extends('layouts.main')
 
 @section('content')
-    <h1>Are you sure you want to delete this technicians?</h1>
+    <h1>Are you sure you want to delete this employee?</h1>
 
     <form action='{{ route('technicians.destroy', $item->id) }}' method='GET'>
         @csrf

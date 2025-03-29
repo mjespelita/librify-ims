@@ -93,7 +93,7 @@
                                 <td>{{ $item->name }}</td>
                                 <td>
                                     @forelse (App\Models\Workspaceusers::where('workspaces_id', $item->id)->get() as $workspaceUser)
-                                        <a href="{{ route('workspaceusers.destroy', $workspaceUser->id) }}"><img class="mb-2" src="{{ $workspaceUser->users->profile_photo_path ? url('/storage/' . $workspaceUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo"></a>
+                                        <img class="mb-2" src="{{ $workspaceUser->users->profile_photo_path ?? "" ? url('/storage/' . $workspaceUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
                                     @empty
                                         <b>No Participants</b>
                                     @endforelse    

@@ -36,7 +36,7 @@
         
                             <tr>
                                 <th>Added By</th>
-                                <td>{{ $item->users->name." (".$item->users->role.")" ?? "no data" }}</td>
+                                <td>{{ $item->users?->name." (".$item->users?->role.")" ?? "no data" }}</td>
                             </tr>
             
                             <tr>
@@ -71,9 +71,9 @@
                             <tbody>
                                 @forelse(App\Models\Deployedtechnicians::where('sites_id', $item->id)->get() as $site)
                                     <tr>
-                                        <td><img src="{{ $site->users->profile_photo_path ? url('/storage/' . $site->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="50" width="50" style="border-radius: 50%;" alt="User Profile Photo"></td>
-                                        <td><b>{{ $site->users->name ?? "no data" }} ({{ $site->users->role ?? "no data" }})</b></td>
-                                        <td>{{ $site->users->email ?? "no data" }}</td>
+                                        <td><img src="{{ $site->users?->profile_photo_path ? url('/storage/' . $site->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="50" width="50" style="border-radius: 50%;" alt="User Profile Photo"></td>
+                                        <td><b>{{ $site->users?->name ?? "no data" }} ({{ $site->users?->role ?? "no data" }})</b></td>
+                                        <td>{{ $site->users?->email ?? "no data" }}</td>
                                         <td>{{ $site->created_at }}</td>
                                     </tr>
                                 @empty

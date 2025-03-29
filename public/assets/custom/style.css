@@ -308,6 +308,12 @@ h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
 }
 
 
+.disabled-link {
+    pointer-events: none; /* Disable clicking */
+    /* opacity: 0.5;  */
+    cursor: not-allowed;
+}
+
 .upload-icon {
     width: 50px;
     height: 50px;

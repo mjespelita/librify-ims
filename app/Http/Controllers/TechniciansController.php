@@ -16,7 +16,7 @@ class TechniciansController extends Controller {
     public function index()
     {
         return view('technicians.technicians', [
-            'technicians' => User::whereNot('role', 'admin')->orderBy('id', 'desc')->paginate(10)
+            'technicians' => User::where('role', 'technician')->orderBy('id', 'desc')->paginate(10)
         ]);
     }
 
@@ -56,7 +56,7 @@ class TechniciansController extends Controller {
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'technician'
+            'role' => $request->role
         ]);
 
         /* Log ************************************************** */
@@ -99,7 +99,8 @@ class TechniciansController extends Controller {
         User::where('id', $techniciansId)->update([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
+            'role' => $request->role
         ]);
 
         return back()->with('success', 'Technicians Updated Successfully!');

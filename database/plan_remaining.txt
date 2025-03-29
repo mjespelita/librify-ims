@@ -58,8 +58,8 @@ March 27, 2025 ----------------------------------
 ok - lead assignee
 ok - comment section add image
 ok - priority - optional
+ok - schedule repeated
 
-schedule repeated
 auto - start
 Grading of task quality
 

@@ -1,5 +1,12 @@
 $(document).ready(function() {
 
+    $(".search-my-tasks").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $(".task-card").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+
     $.get('/get-item-data-for-graph', function(res) {
         var pieChartItemsOverviewOptions = {
             chart: {
@@ -405,4 +412,6 @@ $(document).ready(function() {
 
     populateTimeSelectors();
     renderCalendar();
+
+
 })

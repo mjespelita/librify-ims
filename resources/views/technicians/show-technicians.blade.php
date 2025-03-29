@@ -2,7 +2,7 @@
 @extends('layouts.main')
 
 @section('content')
-    <h1>Technicians Details</h1>
+    <h1>Employee Details</h1>
 
     <div class='card'>
         <div class='card-body'>

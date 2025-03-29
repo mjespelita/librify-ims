@@ -9,15 +9,16 @@
         <div class='col-lg-6 col-md-6 col-sm-12' style='text-align: right;'>
             {{-- <a href='{{ url('trash-tasks') }}'><button class='btn btn-danger'><i class='fas fa-trash'></i> Trash <span class='text-warning'>{{ App\Models\Tasks::where('isTrash', '1')->count() }}</span></button></a>
             <a href='{{ route('tasks.create') }}'><button class='btn btn-success'><i class='fas fa-plus'></i> Add Tasks</button></a> --}}
+            <input type="text" class="search-my-tasks form-control" placeholder="Search...">
         </div>
     </div>
     
-    <div class='card'>
-        <div class='card-body'>
-            <div class='row'>
+    {{-- <div class='card'>
+        <div class='card-body'> --}}
+            {{-- <div class='row'>
                 <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                     <div class='row'>
-                        {{-- <div class='col-4'>
+                        <div class='col-4'>
                             <button type='button' class='btn btn-outline-secondary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
                                 Action
                             </button>
@@ -29,7 +30,7 @@
                                     <i class='fa fa-trash'></i> <span class='text-danger'>Delete Permanently</span> <br> <small>(this action cannot be undone)</small>
                                 </a>
                             </div>
-                        </div> --}}
+                        </div> 
                         <div class='col-8'>
                             <form action='{{ url('/tasks-paginate') }}' method='get'>
                                 <div class='input-group'>
@@ -67,55 +68,106 @@
                         </div>
                     </form>
                 </div>
-            </div>
+            </div> --}}
 
             <div class='table-responsive'>
-                <table class='table table-striped'>
-                    <thead>
-                        <tr>
-                            <th scope='col'>
-                            <input type='checkbox' name='' id='' class='checkAll'>
-                            </th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Projects</th>
-                            <th>Workspace</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->paginate(10) as $item)
-                            <tr>
-                                <th scope='row'>
-                                    <input type='checkbox' name='' id='' class='check' data-id='{{ $item->id }}'>
-                                </th>
-                                <td>{{ $item->tasks->name ?? "no data"  }}</td>
-                                <td>{{ $item->tasks->status ?? "no data" }}</td>
-                                <td>
-                                    <b>{{ $item->projects->name ?? "no data" }}</b>
-                                </td>
-                                <td>
-                                    <b>{{ $item->workspaces->name ?? "no data" }}</b>
-                                </td>
-                                <td>
-                                    <a href='{{ route('tasks.show', $item->tasks->id ?? "no data") }}'><i class='fas fa-eye text-success'></i></a>
-                                    {{-- <a href='{{ route('tasks.edit', $item->tasks->id ?? "no data") }}'><i class='fas fa-edit text-info'></i></a>
-                                    <a href='{{ route('tasks.delete', $item->tasks->id ?? "no data") }}'><i class='fas fa-trash text-danger'></i></a> --}}
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td>No Record...</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                <style>
+                    .task-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                        gap: 50px;
+                        padding: 20px;
+                    }
+                
+                    .task-card {
+                        background: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                        padding: 15px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        border-left: 5px solid #007bff;
+                        transition: 0.3s;
+                    }
+                
+                    .task-card.completed {
+                        border-left-color: #28a745; /* Green for completed */
+                    }
+                
+                    .task-card.pending {
+                        border-left-color: #dc3545; /* Red for pending */
+                    }
+                
+                    .task-header {
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                
+                    .task-info {
+                        font-size: 14px;
+                        color: #666;
+                        margin-bottom: 8px;
+                    }
+                
+                    .task-actions {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-top: auto;
+                    }
+                
+                    .task-actions a {
+                        text-decoration: none;
+                        font-size: 18px;
+                    }
+                </style>
+                
+                <div class="task-grid">
+                    @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->orderBy('id', 'desc')->get() as $item)
+                        @php
+                            $isEmpty = empty($item->tasks->name) || empty($item->tasks->status) ||
+                                       empty($item->projects->name) || empty($item->workspaces->name);
+                        @endphp
+                
+                        @if(!$isEmpty) 
+                            <div class="task-card {{ $item->tasks->status === 'completed' ? 'completed' : 'pending' }}">
+                                <div class="task-header">{{ $item->tasks->name ?? 'Untitled Task' }}</div>
+                
+                                <div class="task-info">
+                                    <b>Status:</b> {{ ucfirst($item->tasks->status ?? 'N/A') }}
+                                </div>
+                
+                                <div class="task-info">
+                                    <b>Project:</b> {{ $item->projects->name ?? 'No Project' }}
+                                </div>
+                
+                                <div class="task-info">
+                                    <b>Workspace:</b> {{ $item->workspaces->name ?? 'No Workspace' }}
+                                </div>
+                
+                                <div class="task-actions">
+                                    {{-- <input type="checkbox" class="check" data-id="{{ $item->id }}"> --}}
+                                    <div>
+                                        <a href="{{ route('tasks.show', $item->tasks->id ?? '#') }}">
+                                            <button class="btn btn-outline-secondary">
+                                                <i class="fas fa-eye text-secondary"></i> View
+                                            </button>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @empty
+                        <p>No tasks found.</p>
+                    @endforelse
+                </div>
+                
             </div>
-        </div>
-    </div>
+        {{-- </div>
+    </div> --}}
 
-    {{ $tasks->links('pagination::bootstrap-5') }}
+    {{-- {{ $tasks->links('pagination::bootstrap-5') }} --}}
 
     <script src='{{ url('assets/jquery/jquery.min.js') }}'></script>
     <script>

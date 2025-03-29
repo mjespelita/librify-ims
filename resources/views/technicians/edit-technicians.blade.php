@@ -2,7 +2,7 @@
 @extends('layouts.main')
 
 @section('content')
-    <h1>Edit Technicians</h1>
+    <h1>Edit Employee</h1>
 
     <div class='card'>
         <div class='card-body'>
@@ -22,6 +22,14 @@
         <div class='form-group'>
             <label for='name'>Password</label>
             <input type='text' class='form-control' id='password' name='password' value='{{ $item->password }}' required>
+        </div>
+
+        <div class='form-group'>
+            <label for='name'>Select Role</label>
+            <select name="role" id="" class="form-control">
+                <option value="technician">Technician</option>
+                <option value="employee">Employee</option>
+            </select>
         </div>
     
                 <button type='submit' class='btn btn-primary mt-3'>Update</button>

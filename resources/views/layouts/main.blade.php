@@ -26,7 +26,7 @@
                     <img src='{{ url('assets/logo.png') }}' alt=''> <br>
                 </div>
             </div>
-            <a href='{{ url('dashboard') }}' class='{{ request()->is('dashboard', 'admin-dashboard', 'technician-dashboard') ? 'active' : '' }}'>
+            <a href='{{ url('dashboard') }}' class='{{ request()->is('dashboard', 'admin-dashboard', 'employee-dashboard') ? 'active' : '' }}'>
                 <i class='fas fa-tachometer-alt'></i> Dashboard
             </a>
             @if (Auth::user()->role === 'admin')
@@ -107,8 +107,21 @@
                 </div>
 
                 <a href='{{ url('my-tasks') }}' 
-                class='{{ request()->is('my-tasks', 'show-tasks/*', 'trash-my-tasks', 'create-my-tasks', 'show-my-tasks/*', 'edit-my-tasks/*', 'delete-my-tasks/*', 'my-tasks-search*') ? 'active' : '' }}'>
-                <i class='fas fa-tasks'></i> My Tasks
+                    class='{{ request()->is('my-tasks', 'show-tasks/*', 'trash-my-tasks', 'create-my-tasks', 'show-my-tasks/*', 'edit-my-tasks/*', 'delete-my-tasks/*', 'my-tasks-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-tasks'></i> My Tasks
+                </a>
+
+            @endif  
+
+            @if (Auth::user()->role === 'employee')
+
+                <div class="p-3">
+                    <b>Task Management</b>
+                </div>
+
+                <a href='{{ url('my-tasks') }}' 
+                    class='{{ request()->is('my-tasks', 'show-tasks/*', 'trash-my-tasks', 'create-my-tasks', 'show-my-tasks/*', 'edit-my-tasks/*', 'delete-my-tasks/*', 'my-tasks-search*') ? 'active' : '' }}'>
+                    <i class='fas fa-tasks'></i> My Tasks
                 </a>
 
             @endif  

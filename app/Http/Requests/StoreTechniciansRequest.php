@@ -23,7 +23,7 @@ class StoreTechniciansRequest extends FormRequest
     {
         return [
             //
-'name' => 'required','email' => 'required','password' => 'required',
+'name' => 'required','email' => 'required','password' => 'required','role' => 'required',
         ];
     }
 }

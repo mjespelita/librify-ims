@@ -5,7 +5,7 @@
     <h1>Projects Details</h1>
 
     <div class="row">
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-4 col-lg-4">
             <div class='card'>
                 <div class='card-body'>
                     <div class='table-responsive'>
@@ -29,10 +29,10 @@
                                     @endphp
 
                                     @forelse (App\Models\Taskassignments::where('tasks_projects_id', $item->id)->get() as $collaborator)
-                                        @if (!in_array($collaborator->users->id, $displayedUsers))
-                                            <img class="mb-2" src="{{ $collaborator->users->profile_photo_path ? url('/storage/' . $collaborator->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
+                                        @if (!in_array($collaborator->users?->id, $displayedUsers))
+                                            <img class="mb-2" src="{{ $collaborator->users?->profile_photo_path ? url('/storage/' . $collaborator->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
                                             @php
-                                                $displayedUsers[] = $collaborator->users->id;
+                                                $displayedUsers[] = $collaborator->users?->id;
                                             @endphp
                                         @endif
                                     @empty
@@ -132,7 +132,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-8 col-lg-8">
             <div class='card'>
                 <div class='card-body'>
                     <h5>Tasks from {{ $item->name }}</h5>
@@ -193,7 +193,7 @@
         
                     <div class='table-responsive'>
                         <table class='table table-striped'>
-                            <thead>
+                            {{-- <thead>
                                 <tr>
                                     <th scope='col'>
                                     <input type='checkbox' name='' id='' class='checkAll'>
@@ -206,59 +206,137 @@
                                     <th>Scheduled</th>
                                     <th>Actions</th>
                                 </tr>
-                            </thead>
-        
-                            <tbody>
-                                @forelse(App\Models\Tasks::where('projects_id', $item->id)->orderBy('id', 'desc')->paginate(10) as $task)
-                                    <tr>
-                                        <th scope='row'>
-                                            <input type='checkbox' name='' id='' class='check' data-id='{{ $task->id }}'>
-                                        </th>
-                                        <td>{{ $task->name }}</td>
-                                        <td>
-                                            @forelse (App\Models\Taskassignments::where('tasks_id', $task->id)->get() as $taskUser)
-                                                <img class="mb-2" src="{{ $taskUser->users->profile_photo_path ? url('/storage/' . $taskUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
-                                                
-                                                @empty
-                                                <b>No Collaborators</b>
-                                            @endforelse    
-                                        </td>
-                                        <td>
-                                            @if($task->status === 'completed')
-                                                <b class="text-success"><i class="fas fa-check"></i></b>
-                                            @else
-                                                <b class="text-danger"><i class="fas fa-times"></i></b>
-                                            @endif
-                                        </td>
-                                        <td>{{ Smark\Smark\Dater::humanReadableDateWithDay($task->deadline) }}</td>
-                                        <td>
-                                            {{-- <b class="{{ $task->priority === 'high' ? 'text-danger' : 'text-success' }}">
-                                                {{ ucfirst($task->priority) }}
-                                            </b> --}}
+                            </thead> --}}
 
-                                            
-                                            @if($task->priority === 'high')
-                                                <b class="text-danger"><i class="fas fa-arrow-up"></i></b>
-                                            @else
-                                                <b class="text-primary"><i class="fas fa-arrow-down"></i></b>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <b>
-                                                {{ $task->isScheduled === 1 ? "Yes" : "No" }}
-                                            </b>
-                                        </td>
-                                        <td>
-                                            <a href='{{ route('tasks.show', $task->id) }}'><i class='fas fa-eye text-success'></i></a>
-                                            <a href='{{ route('tasks.edit', $task->id) }}'><i class='fas fa-edit text-info'></i></a>
-                                            <a href='{{ route('tasks.delete', $task->id) }}'><i class='fas fa-trash text-danger'></i></a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td>No Record...</td>
-                                    </tr>
-                                @endforelse
+                            <tbody>
+                                @php
+                                    $scheduledTasks = App\Models\Tasks::where('projects_id', $item->id)
+                                        ->where('isScheduled', 1)
+                                        ->orderBy('id', 'desc')
+                                        ->paginate(10);
+
+                                    $nonScheduledTasks = App\Models\Tasks::where('projects_id', $item->id)
+                                        ->where('isScheduled', 0)
+                                        ->orderBy('id', 'desc')
+                                        ->paginate(10);
+                                @endphp
+
+                                <br>
+
+                                <b class="text-primary mt-5">Scheduled Tasks</b>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope='col'>
+                                                <input type='checkbox' name='' id='' class='checkAll'>
+                                                </th>
+                                            <th>Task Name</th>
+                                            <th>Assigned Users</th>
+                                            <th>Status</th>
+                                            <th>Deadline</th>
+                                            <th>Priority</th>
+                                            <th>Scheduled</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($scheduledTasks as $task)
+                                            <tr>
+                                                <th scope='row'>
+                                                    <input type='checkbox' class='check' data-id='{{ $task->id }}'>
+                                                </th>
+                                                <td>{{ $task->name }}</td>
+                                                <td>
+                                                    @forelse (App\Models\Taskassignments::where('tasks_id', $task->id)->get() as $taskUser)
+                                                        <img class="mb-2" src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
+                                                    @empty
+                                                        <b>No Collaborators</b>
+                                                    @endforelse    
+                                                </td>
+                                                <td>
+                                                    @if($task->status === 'completed')
+                                                        <b class="text-success"><i class="fas fa-check"></i></b>
+                                                    @else
+                                                        <b class="text-danger"><i class="fas fa-times"></i></b>
+                                                    @endif
+                                                </td>
+                                                <td>{{ Smark\Smark\Dater::humanReadableDateWithDay($task->deadline) }}</td>
+                                                <td>
+                                                    @if($task->priority === 'high')
+                                                        <b class="text-danger"><i class="fas fa-arrow-up"></i></b>
+                                                    @else
+                                                        <b class="text-primary"><i class="fas fa-arrow-down"></i></b>
+                                                    @endif
+                                                </td>
+                                                <td><b class="text-success">Yes</b></td>
+                                                <td>
+                                                    <a href='{{ route('tasks.show', $task->id) }}'><i class='fas fa-eye text-success'></i></a>
+                                                    <a href='{{ route('tasks.edit', $task->id) }}'><i class='fas fa-edit text-info'></i></a>
+                                                    <a href='{{ route('tasks.delete', $task->id) }}'><i class='fas fa-trash text-danger'></i></a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="8">No Scheduled Tasks...</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+
+                                <b class="text-danger">Non-Scheduled Tasks</b>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Task Name</th>
+                                            <th>Assigned Users</th>
+                                            <th>Status</th>
+                                            <th>Deadline</th>
+                                            <th>Priority</th>
+                                            <th>Scheduled</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($nonScheduledTasks as $task)
+                                            <tr>
+                                                <th scope='row'>
+                                                    <input type='checkbox' class='check' data-id='{{ $task->id }}'>
+                                                </th>
+                                                <td>{{ $task->name }}</td>
+                                                <td>
+                                                    @forelse (App\Models\Taskassignments::where('tasks_id', $task->id)->get() as $taskUser)
+                                                        <img class="mb-2" src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
+                                                    @empty
+                                                        <b>No Collaborators</b>
+                                                    @endforelse    
+                                                </td>
+                                                <td>
+                                                    @if($task->status === 'completed')
+                                                        <b class="text-success"><i class="fas fa-check"></i></b>
+                                                    @else
+                                                        <b class="text-danger"><i class="fas fa-times"></i></b>
+                                                    @endif
+                                                </td>
+                                                <td>{{ Smark\Smark\Dater::humanReadableDateWithDay($task->deadline) }}</td>
+                                                <td>
+                                                    @if($task->priority === 'high')
+                                                        <b class="text-danger"><i class="fas fa-arrow-up"></i></b>
+                                                    @else
+                                                        <b class="text-primary"><i class="fas fa-arrow-down"></i></b>
+                                                    @endif
+                                                </td>
+                                                <td><b class="text-danger">No</b></td>
+                                                <td>
+                                                    <a href='{{ route('tasks.show', $task->id) }}'><i class='fas fa-eye text-success'></i></a>
+                                                    <a href='{{ route('tasks.edit', $task->id) }}'><i class='fas fa-edit text-info'></i></a>
+                                                    <a href='{{ route('tasks.delete', $task->id) }}'><i class='fas fa-trash text-danger'></i></a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="8">No Non-Scheduled Tasks...</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+
                             </tbody>
                         </table>
                     </div>

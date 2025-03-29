@@ -77,26 +77,25 @@ class TaskassignmentsController extends Controller {
                             ->whereNull('pause_time')
                             ->first();
     
-                        if (!$taskTimeLog) {
-                            return back()->with('error', 'No active timer to pause.');
+                        if ($taskTimeLog) {
+                            $latestElapseTime = $taskTimeLog->elapsed_time;
+    
+                            $startTime = Carbon::parse($taskTimeLog->start_time); // Assuming this is a Carbon instance
+                            $now = Carbon::now();
+        
+                            $diffInSeconds = $startTime->diffInSeconds($now);
+        
+                            $minus = $diffInSeconds - $latestElapseTime;
+        
+                            $final = $latestElapseTime + $minus;
+        
+                            $taskTimeLog->update([
+                                'pause_time'   => now(),
+                                'elapsed_time' => $final, // Save total elapsed time
+                                'status'       => 'paused', // Update status
+                            ]);
                         }   
     
-                        $latestElapseTime = $taskTimeLog->elapsed_time;
-    
-                        $startTime = Carbon::parse($taskTimeLog->start_time); // Assuming this is a Carbon instance
-                        $now = Carbon::now();
-    
-                        $diffInSeconds = $startTime->diffInSeconds($now);
-    
-                        $minus = $diffInSeconds - $latestElapseTime;
-    
-                        $final = $latestElapseTime + $minus;
-    
-                        $taskTimeLog->update([
-                            'pause_time'   => now(),
-                            'elapsed_time' => $final, // Save total elapsed time
-                            'status'       => 'paused', // Update status
-                        ]);
                     }
                 }
             }

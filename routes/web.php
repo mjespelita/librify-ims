@@ -108,7 +108,7 @@ Route::middleware([
         return view('admin-dashboard');
     })->middleware(AdminMiddleware::class);
 
-    Route::get('/technician-dashboard', function () {
+    Route::get('/employee-dashboard', function () {
         return view('technician-dashboard');
     })->middleware(TechnicianMiddleware::class);
 

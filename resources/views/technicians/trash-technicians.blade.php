@@ -4,7 +4,7 @@
 @section('content')
     <div class='row'>
         <div class='col-lg-6 col-md-6 col-sm-12'>
-            <h1>Trash Technicians</h1>
+            <h1>Trash Employees</h1>
         </div>
         <div class='col-lg-6 col-md-6 col-sm-12' style='text-align: right;'>
         </div>
