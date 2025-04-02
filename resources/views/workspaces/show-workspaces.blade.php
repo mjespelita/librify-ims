@@ -35,7 +35,7 @@
                                                     $addedUsers = App\Models\WorkspaceUsers::where('workspaces_id', $item->id)->pluck('users_id')->toArray();
                                                 @endphp
                                             
-                                                @forelse (App\Models\User::whereNot('role', 'admin')->whereNotIn('id', $addedUsers)->orderBy('id', 'desc')->get() as $user)
+                                                @forelse (App\Models\User::whereNot('id', Auth::user()->id)->whereNotIn('id', $addedUsers)->orderBy('id', 'desc')->get() as $user)
                                                     <option value="{{ $user->id }}">
                                                         {{ $user->name }}
                                                     </option>

@@ -13,10 +13,10 @@
         </div>
     </div>
     
-    {{-- <div class='card'>
-        <div class='card-body'> --}}
-            {{-- <div class='row'>
-                <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
+    <div class='card'>
+        <div class='card-body'>
+             <div class='row'>
+                {{-- <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                     <div class='row'>
                         <div class='col-4'>
                             <button type='button' class='btn btn-outline-secondary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
@@ -43,9 +43,10 @@
                             </form>
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
-                    <form action='{{ url('/tasks-filter') }}' method='get'>
+                    <h5>Jump To Date.</h5>
+                    <form action='{{ url('/my-tasks-filter') }}' method='get'>
                         <div class='input-group'>
                             <input type='date' class='form-control' id='from' name='from' required> 
                             <b class='pt-2'>- to -</b>
@@ -57,7 +58,7 @@
                         @csrf
                     </form>
                 </div>
-                <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
+                {{-- <div class='col-lg-4 col-md-4 col-sm-12 mt-2'>
                     <!-- Search Form -->
                     <form action='{{ url('/tasks-search') }}' method='GET'>
                         <div class='input-group'>
@@ -67,64 +68,15 @@
                             </div>
                         </div>
                     </form>
-                </div>
-            </div> --}}
+                </div> --}}
+            </div>
 
+            <br>
+
+            <h5>Today</h5>
             <div class='table-responsive'>
-                <style>
-                    .task-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                        gap: 50px;
-                        padding: 20px;
-                    }
-                
-                    .task-card {
-                        background: #fff;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                        padding: 15px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        border-left: 5px solid #007bff;
-                        transition: 0.3s;
-                    }
-                
-                    .task-card.completed {
-                        border-left-color: #28a745; /* Green for completed */
-                    }
-                
-                    .task-card.pending {
-                        border-left-color: #dc3545; /* Red for pending */
-                    }
-                
-                    .task-header {
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-                
-                    .task-info {
-                        font-size: 14px;
-                        color: #666;
-                        margin-bottom: 8px;
-                    }
-                
-                    .task-actions {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-top: auto;
-                    }
-                
-                    .task-actions a {
-                        text-decoration: none;
-                        font-size: 18px;
-                    }
-                </style>
-                
                 <div class="task-grid">
-                    @forelse(App\Models\Taskassignments::where('users_id', Auth::user()->id)->orderBy('id', 'desc')->get() as $item)
+                    @forelse($tasks as $item)
                         @php
                             $isEmpty = empty($item->tasks->name) || empty($item->tasks->status) ||
                                        empty($item->projects->name) || empty($item->workspaces->name);
@@ -145,6 +97,10 @@
                                 <div class="task-info">
                                     <b>Workspace:</b> {{ $item->workspaces->name ?? 'No Workspace' }}
                                 </div>
+
+                                <div class="task-info">
+                                    <b>Created On:</b> {{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}
+                                </div>
                 
                                 <div class="task-actions">
                                     {{-- <input type="checkbox" class="check" data-id="{{ $item->id }}"> --}}
@@ -162,12 +118,61 @@
                         <p>No tasks found.</p>
                     @endforelse
                 </div>
-                
             </div>
+
+            {{ $tasks->links('pagination::bootstrap-5') }}
+
+            <h5>Unfinished Tasks</h5>
+            <div class='table-responsive'>
+                <div class="task-grid">
+                    @forelse($unfinished_tasks as $item)
+                        @php
+                            $isEmpty = empty($item->tasks->name) || empty($item->tasks->status) ||
+                                       empty($item->projects->name) || empty($item->workspaces->name);
+                        @endphp
+                
+                        @if(!$isEmpty) 
+                            <div class="task-card {{ $item->tasks->status === 'completed' ? 'completed' : 'pending' }}">
+                                <div class="task-header">{{ $item->tasks->name ?? 'Untitled Task' }}</div>
+                
+                                <div class="task-info">
+                                    <b>Status:</b> {{ ucfirst($item->tasks->status ?? 'N/A') }}
+                                </div>
+                
+                                <div class="task-info">
+                                    <b>Project:</b> {{ $item->projects->name ?? 'No Project' }}
+                                </div>
+                
+                                <div class="task-info">
+                                    <b>Workspace:</b> {{ $item->workspaces->name ?? 'No Workspace' }}
+                                </div>
+
+                                <div class="task-info">
+                                    <b>Created On:</b> {{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->created_at) }}
+                                </div>
+                
+                                <div class="task-actions">
+                                    {{-- <input type="checkbox" class="check" data-id="{{ $item->id }}"> --}}
+                                    <div>
+                                        <a href="{{ route('tasks.show', $item->tasks->id ?? '#') }}">
+                                            <button class="btn btn-outline-secondary">
+                                                <i class="fas fa-eye text-secondary"></i> View
+                                            </button>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @empty
+                        <p>No tasks found.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            {{ $unfinished_tasks->links('pagination::bootstrap-5') }}
         {{-- </div>
     </div> --}}
 
-    {{-- {{ $tasks->links('pagination::bootstrap-5') }} --}}
 
     <script src='{{ url('assets/jquery/jquery.min.js') }}'></script>
     <script>

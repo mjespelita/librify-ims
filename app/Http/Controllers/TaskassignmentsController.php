@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Taskassignments, Tasks, Tasktimelogs};
+use App\Models\{Comments, Logs, Taskassignments, Tasks, Tasktimelogs, User};
 use App\Http\Requests\StoreTaskassignmentsRequest;
 use App\Http\Requests\UpdateTaskassignmentsRequest;
 use Carbon\Carbon;
@@ -110,6 +110,22 @@ class TaskassignmentsController extends Controller {
             'isLeadAssignee' => $isLeadAssignee
         ]);
 
+        $tasksProjectsId = Tasks::where('id', $request->tasks_id)->value('projects_id');
+        $tasksWorkspaceId = Tasks::where('id', $request->tasks_id)->value('projects_workspaces_id');
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' (' . Auth::user()->role . ') assigned ' . 
+            User::where('id', $request->users_id)->value('name') . ' as ' . 
+            (!$isLeadAssignee ? 'assignee' : 'lead assignee') . ' - '.$request->role,
+            'tasks_id' => $request->tasks_id,
+            'tasks_projects_id' => $tasksProjectsId,
+            'tasks_projects_workspaces_id' => $tasksWorkspaceId,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
+        ]);
+
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' created a new Taskassignments '.'"'.$request->name.'"']);
         /******************************************************** */
@@ -204,6 +220,20 @@ class TaskassignmentsController extends Controller {
         $oldName = Taskassignments::where('id', $taskassignmentsId)->value('name');
         // Logs::create(['log' => Auth::user()->name.' deleted a Taskassignments "'.$oldName.'".']);
         /******************************************************** */
+
+        $tasksProjectsId = Tasks::where('id', $taskId)->value('projects_id');
+        $tasksWorkspaceId = Tasks::where('id', $taskId)->value('projects_workspaces_id');
+
+        // comment notification that i started the timer
+
+        Comments::create([
+            'comment' => Auth::user()->name . ' ('.Auth::user()->role.') removed '.User::where('id', $userId)->value('name').' as assignee.',
+            'tasks_id' => $taskId,
+            'tasks_projects_id' => $tasksProjectsId,
+            'tasks_projects_workspaces_id' => $tasksWorkspaceId,
+            'users_id' => Auth::user()->id,
+            'hasImage' => 0,
+        ]);
 
         Taskassignments::where('id', $taskassignmentsId)->delete();
 

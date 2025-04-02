@@ -46,7 +46,7 @@
                 </a>
 
                 <a href='{{ url('technicians') }}' class='{{ request()->is('technicians', 'trash-technicians', 'create-technicians', 'show-technicians/*', 'edit-technicians/*', 'delete-technicians/*', 'technicians-search*') ? 'active' : '' }}'>
-                    <i class='fas fa-users'></i> Technicians
+                    <i class='fas fa-users'></i> Employees
                 </a>
 
                 <a href='{{ url('onsites') }}' class='{{ request()->is('onsites', 'view-technician-onsite-items/*', 'trash-onsites', 'create-onsites', 'show-onsites/*', 'edit-onsites/*', 'delete-onsites/*', 'onsites-search*') ? 'active' : '' }}'>

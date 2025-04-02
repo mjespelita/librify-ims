@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{Logs, Taskassignments, Tasks};
 use App\Http\Requests\StoreTasksRequest;
 use App\Http\Requests\UpdateTasksRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,8 +22,17 @@ class TasksController extends Controller {
 
     public function myTasks()
     {
-        return view('technicians.my-tasks',[
-            'tasks' => Taskassignments::where('users_id', Auth::user()->id)->paginate(10)
+        return view('technicians.my-tasks', [
+            'tasks' => Taskassignments::where('users_id', Auth::user()->id)
+                                      ->whereDate('created_at', Carbon::today())
+                                      ->orderBy('id', 'desc')
+                                      ->paginate(20),
+            'unfinished_tasks' => Taskassignments::where('users_id', Auth::user()->id)
+                ->whereHas('tasks', function ($query) {
+                    $query->where('status', 'pending'); // Ensure task status is 'pending'
+                })
+                ->orderBy('id', 'desc')
+                ->paginate(20),
         ]);
     }
 

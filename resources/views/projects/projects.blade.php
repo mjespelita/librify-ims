@@ -160,7 +160,7 @@
                                 @php $displayedUsers = []; @endphp
                                 @forelse (App\Models\Taskassignments::where('tasks_projects_id', $item->id)->get() as $projectUser)
                                     @if (!empty($projectUser->users?->id) && !in_array($projectUser->users->id, $displayedUsers))
-                                        <img src="{{ $projectUser->users->profile_photo_path ? url('/storage/' . $projectUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User">
+                                        <a href="{{ url('show-technicians/'.$projectUser->users_id) }}"><img src="{{ $projectUser->users->profile_photo_path ? url('/storage/' . $projectUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User"></a>
                                         @php $displayedUsers[] = $projectUser->users->id; @endphp
                                     @endif
                                 @empty

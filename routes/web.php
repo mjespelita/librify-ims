@@ -88,6 +88,7 @@ use App\Models\Taskassignments;
 
 use App\Http\Controllers\TasktimelogsController;
 use App\Models\Tasktimelogs;
+use Illuminate\Support\Facades\Auth;
 
 // end of import
 
@@ -129,7 +130,124 @@ Route::middleware([
     Route::get('/my-sites', [RandomController::class, 'mySites']);
     Route::get('/my-tasks', [TasksController::class, 'myTasks']);
 
+    Route::get('/my-tasks-filter', function (Request $request) {
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
+        $query = Taskassignments::query();
+        
+        // Convert input dates to Carbon instances (ensuring full day range)
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
+    
+        // Fetch filtered tasks based on date range
+        if ($fromDate && $toDate) {
+            $tasks = $query->where('users_id', Auth::user()->id)
+            ->whereNotDate('created_at', Carbon::today())->paginate(20);
+        } else {
+            $tasks = $query->where('users_id', Auth::user()->id)
+                           ->groupBy('tasks_id')
+                           ->paginate(10);
+        }
+    
+        // ✅ Query all pending tasks within the selected range
+        $unfinished_tasks = Taskassignments::where('users_id', Auth::user()->id)
+            ->whereHas('tasks', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->when($fromDate && $toDate, function ($query) use ($fromDate, $toDate) {
+                $query->whereBetween('created_at', [$fromDate, $toDate]); // Filter by date range
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(100);
+    
+        return view('technicians.my-tasks', compact('tasks', 'unfinished_tasks', 'from', 'to'));
+    });
+
+    Route::get('/admin-my-tasks-filter', function (Request $request) {
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $userId = $request->input('user') ?? Auth::id(); // Use requested user or authenticated user
+    
+        // Convert input dates to Carbon instances
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
+    
+        // Fetch user details
+        $user = User::findOrFail($userId);
+    
+        // Query task assignments within the date range (or all if no range)
+        $taskAssignmentsQuery = Taskassignments::where('users_id', $userId);
+        if ($fromDate && $toDate) {
+            $taskAssignmentsQuery->whereBetween('created_at', [$fromDate, $toDate]);
+        } else {
+            $taskAssignmentsQuery->whereDate('created_at', Carbon::today()); // Default to today
+        }
+    
+        $taskAssignments = $taskAssignmentsQuery->orderBy('id', 'desc')->paginate(20);
+    
+        // Query unfinished task assignments (pending status)
+        $unfinished_taskAssignmentsQuery = Taskassignments::where('users_id', $userId)
+            ->whereHas('tasks', function ($query) {
+                $query->where('status', 'pending'); 
+            });
+    
+        if ($fromDate && $toDate) {
+            $unfinished_taskAssignmentsQuery->whereBetween('created_at', [$fromDate, $toDate]);
+        } else {
+            $unfinished_taskAssignmentsQuery->whereDate('created_at', Carbon::today());
+        }
+    
+        $unfinished_taskAssignments = $unfinished_taskAssignmentsQuery->orderBy('id', 'desc')->paginate(20);
+    
+        return view('technicians.show-technicians', [
+            'item' => $user,
+            'taskAssignments' => $taskAssignments,
+            'unfinished_taskAssignments' => $unfinished_taskAssignments,
+            'from' => $from,
+            'to' => $to
+        ]);
+    });
+    
+
     // API
+
+    Route::get('/get-employee-task-count/{users_id}', function ($users_id) {
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+    
+        $taskCounts = [];
+    
+        for ($date = $startOfMonth->copy(); $date->lte($endOfMonth); $date->addDay()) {
+            $dateString = $date->toDateString(); // Format: YYYY-MM-DD
+    
+            // Count pending task assignments for the user on this date
+            $pendingTasks = Taskassignments::where('users_id', $users_id)
+                ->whereHas('tasks', function ($query) {
+                    $query->where('status', 'pending');
+                })
+                ->whereDate('created_at', $dateString)
+                ->count();
+    
+            // Count completed task assignments for the user on this date
+            $completedTasks = Taskassignments::where('users_id', $users_id)
+                ->whereHas('tasks', function ($query) {
+                    $query->where('status', 'completed');
+                })
+                ->whereDate('created_at', $dateString)
+                ->count();
+    
+            $taskCounts[] = [
+                'date' => $dateString,
+                'pending' => $pendingTasks ?: 0, // Ensure zero if no tasks
+                'completed' => $completedTasks ?: 0,
+            ];
+        }
+    
+        return response()->json($taskCounts);
+    });
+    
+    
 
     Route::get('/get-item-data-for-graph', function () {
         return response()->json([
@@ -257,7 +375,7 @@ Route::middleware([
         // Perform the search logic
         $logs = Logs::when($search, function ($query) use ($search) {
             return $query->where('log', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('logs.logs', compact('logs', 'search'));
     });
@@ -280,37 +398,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for logs
         $query = Logs::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $logs = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $logs = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $logs = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $logs = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all logs without filtering
-            $logs = $query->paginate(10);  // Paginate results
+            $logs = $query->paginate(10);
         }
     
         // Return the view with logs and the selected date range
@@ -340,7 +447,7 @@ Route::middleware([
         // Perform the search logic
         $types = Types::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('types.types', compact('types', 'search'));
     });
@@ -363,37 +470,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for types
         $query = Types::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $types = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $types = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $types = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $types = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all types without filtering
-            $types = $query->paginate(10);  // Paginate results
+            $types = $query->paginate(10);
         }
     
         // Return the view with types and the selected date range
@@ -451,37 +547,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for items
         $query = Items::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $items = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $items = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $items = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $items = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all items without filtering
-            $items = $query->paginate(10);  // Paginate results
+            $items = $query->paginate(10);
         }
     
         // Return the view with items and the selected date range
@@ -512,7 +597,7 @@ Route::middleware([
         $sites = Sites::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%")
             ->orWhere('phonenumber', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('sites.sites', compact('sites', 'search'));
     });
@@ -535,37 +620,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for sites
         $query = Sites::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $sites = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $sites = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $sites = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $sites = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all sites without filtering
-            $sites = $query->paginate(10);  // Paginate results
+            $sites = $query->paginate(10);
         }
     
         // Return the view with sites and the selected date range
@@ -596,7 +670,7 @@ Route::middleware([
         $technicians = User::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%")
             ->orWhere('email', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('technicians.technicians', compact('technicians', 'search'));
     });
@@ -619,37 +693,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for technicians
         $query = Technicians::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $technicians = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $technicians = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $technicians = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $technicians = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all technicians without filtering
-            $technicians = $query->paginate(10);  // Paginate results
+            $technicians = $query->paginate(10);
         }
     
         // Return the view with technicians and the selected date range
@@ -706,37 +769,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for itemlogs
         $query = Itemlogs::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $itemlogs = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $itemlogs = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $itemlogs = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $itemlogs = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all itemlogs without filtering
-            $itemlogs = $query->paginate(10);  // Paginate results
+            $itemlogs = $query->paginate(10);
         }
     
         // Return the view with itemlogs and the selected date range
@@ -791,37 +843,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for onsites
         $query = Onsites::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $onsites = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $onsites = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $onsites = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $onsites = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all onsites without filtering
-            $onsites = $query->paginate(10);  // Paginate results
+            $onsites = $query->paginate(10);
         }
     
         // Return the view with onsites and the selected date range
@@ -876,37 +917,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for damages
         $query = Damages::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $damages = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $damages = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $damages = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $damages = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all damages without filtering
-            $damages = $query->paginate(10);  // Paginate results
+            $damages = $query->paginate(10);
         }
     
         // Return the view with damages and the selected date range
@@ -936,7 +966,7 @@ Route::middleware([
         // Perform the search logic
         $deployedtechnicians = Deployedtechnicians::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('deployedtechnicians.deployedtechnicians', compact('deployedtechnicians', 'search'));
     });
@@ -959,37 +989,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for deployedtechnicians
         $query = Deployedtechnicians::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $deployedtechnicians = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $deployedtechnicians = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $deployedtechnicians = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $deployedtechnicians = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all deployedtechnicians without filtering
-            $deployedtechnicians = $query->paginate(10);  // Paginate results
+            $deployedtechnicians = $query->paginate(10);
         }
     
         // Return the view with deployedtechnicians and the selected date range
@@ -1019,7 +1038,7 @@ Route::middleware([
         // Perform the search logic
         $workspaces = Workspaces::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('workspaces.workspaces', compact('workspaces', 'search'));
     });
@@ -1046,38 +1065,24 @@ Route::middleware([
         $query = Workspaces::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $workspaces = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $workspaces = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $workspaces = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $workspaces = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all workspaces without filtering
-            $workspaces = $query->paginate(10);  // Paginate results
+            $workspaces = $query->paginate(10);
         }
     
         // Return the view with workspaces and the selected date range
         return view('workspaces.workspaces', compact('workspaces', 'from', 'to'));
     });
+    
 
     // end...
 
@@ -1102,7 +1107,7 @@ Route::middleware([
         // Perform the search logic
         $projects = Projects::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('projects.projects', compact('projects', 'search'));
     });
@@ -1129,33 +1134,18 @@ Route::middleware([
         $query = Projects::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $projects = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $projects = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $projects = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $projects = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all projects without filtering
-            $projects = $query->paginate(10);  // Paginate results
+            $projects = $query->paginate(10);
         }
     
         // Return the view with projects and the selected date range
@@ -1184,8 +1174,9 @@ Route::middleware([
 
         // Perform the search logic
         $tasks = Tasks::when($search, function ($query) use ($search) {
-            return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+            return $query->where('name', 'like', "%$search%")
+            ->orWhere('status', 'like', "%$search%");
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('tasks.tasks', compact('tasks', 'search'));
     });
@@ -1208,37 +1199,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for tasks
         $query = Tasks::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $tasks = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $tasks = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $tasks = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $tasks = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all tasks without filtering
-            $tasks = $query->paginate(10);  // Paginate results
+            $tasks = $query->paginate(100);
         }
     
         // Return the view with tasks and the selected date range
@@ -1268,7 +1248,7 @@ Route::middleware([
         // Perform the search logic
         $workspaceusers = Workspaceusers::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('workspaceusers.workspaceusers', compact('workspaceusers', 'search'));
     });
@@ -1291,37 +1271,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for workspaceusers
         $query = Workspaceusers::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $workspaceusers = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $workspaceusers = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $workspaceusers = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $workspaceusers = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all workspaceusers without filtering
-            $workspaceusers = $query->paginate(10);  // Paginate results
+            $workspaceusers = $query->paginate(10);
         }
     
         // Return the view with workspaceusers and the selected date range
@@ -1351,7 +1320,7 @@ Route::middleware([
         // Perform the search logic
         $comments = Comments::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('comments.comments', compact('comments', 'search'));
     });
@@ -1374,37 +1343,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for comments
-        $query = Comments::query();
+        $query = comments::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $comments = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $comments = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $comments = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $comments = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all comments without filtering
-            $comments = $query->paginate(10);  // Paginate results
+            $comments = $query->paginate(10);
         }
     
         // Return the view with comments and the selected date range
@@ -1434,7 +1392,7 @@ Route::middleware([
         // Perform the search logic
         $taskassignments = Taskassignments::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('taskassignments.taskassignments', compact('taskassignments', 'search'));
     });
@@ -1457,37 +1415,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for taskassignments
         $query = Taskassignments::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $taskassignments = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $taskassignments = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $taskassignments = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $taskassignments = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all taskassignments without filtering
-            $taskassignments = $query->paginate(10);  // Paginate results
+            $taskassignments = $query->paginate(10);
         }
     
         // Return the view with taskassignments and the selected date range
@@ -1523,7 +1470,7 @@ Route::middleware([
         // Perform the search logic
         $tasktimelogs = Tasktimelogs::when($search, function ($query) use ($search) {
             return $query->where('name', 'like', "%$search%");
-        })->paginate(10);
+        })->orderBy('id', 'desc')->paginate(10);
 
         return view('tasktimelogs.tasktimelogs', compact('tasktimelogs', 'search'));
     });
@@ -1546,37 +1493,26 @@ Route::middleware([
         $from = $request->input('from');
         $to = $request->input('to');
     
+        // Retrieve 'from' and 'to' dates from the URL
+        $from = $request->input('from');
+        $to = $request->input('to');
+    
         // Default query for tasktimelogs
         $query = Tasktimelogs::query();
     
         // Convert dates to Carbon instances for better comparison
-        $fromDate = $from ? Carbon::parse($from) : null;
-        $toDate = $to ? Carbon::parse($to) : null;
+        $fromDate = $from ? Carbon::parse($from)->startOfDay() : null;
+        $toDate = $to ? Carbon::parse($to)->endOfDay() : null;
     
         // Check if both 'from' and 'to' dates are provided
-        if ($from && $to) {
-            // If 'from' and 'to' are the same day (today)
-            if ($fromDate->isToday() && $toDate->isToday()) {
-                // Return results from today and include the 'from' date's data
-                $tasktimelogs = $query->whereDate('created_at', '=', Carbon::today())
-                               ->orderBy('created_at', 'desc')
-                               ->paginate(10);
-            } else {
-                // If 'from' date is greater than 'to' date, order ascending (from 'to' to 'from')
-                if ($fromDate->gt($toDate)) {
-                    $tasktimelogs = $query->whereBetween('created_at', [$toDate, $fromDate])
-                                   ->orderBy('created_at', 'asc')  // Ascending order
-                                   ->paginate(10);
-                } else {
-                    // Otherwise, order descending (from 'from' to 'to')
-                    $tasktimelogs = $query->whereBetween('created_at', [$fromDate, $toDate])
-                                   ->orderBy('created_at', 'desc')  // Descending order
-                                   ->paginate(10);
-                }
-            }
+        if ($fromDate && $toDate) {
+            // Ensure correct date filtering with full day range
+            $tasktimelogs = $query->whereBetween('created_at', [$fromDate, $toDate])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(10);
         } else {
             // If 'from' or 'to' are missing, show all tasktimelogs without filtering
-            $tasktimelogs = $query->paginate(10);  // Paginate results
+            $tasktimelogs = $query->paginate(10);
         }
     
         // Return the view with tasktimelogs and the selected date range

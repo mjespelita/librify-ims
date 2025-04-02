@@ -6,78 +6,104 @@
 
     <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        @if ($item->status === 'pending')
-                            <b class="text-info">
-                                <i class="fas fa-hourglass-half"></i> Task Pending
-                            </b>
-                        @endif
-
-                        @if ($item->status === 'completed')
-                            <b class="text-success">
-                                <i class="fas fa-check-circle"></i> Task Completed
-                            </b>
-                        @endif
-                        <div class="col-lg-12 col-md-12 col-sm-12">
-                            <h1 class="timer" style="width: 100%; font-family: 'Courier New', monospace; font-size: 2.5rem; color: #ff3b30; background: #ffffff; padding: 10px; border-radius: 10px; display: inline-block; text-shadow: 2px 2px 5px rgba(255, 59, 48, 0.5);">
-                                00:00:00
-                            </h1>
-                        </div>
-                        <div class="col-lg-12 col-md-12 col-sm-12">
-
-                            {{-- timer con --}}
-                            
-                            @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->count() === 0)
-                                <form action="{{ route('tasktimelogs.store') }}" method="POST">
-                                    @csrf
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Timer</h5>
+                            <div class="row">
+                                @if ($item->status === 'pending')
+                                    <b class="text-info">
+                                        <i class="fas fa-hourglass-half"></i> Task Pending
+                                    </b>
+                                @endif
+        
+                                @if ($item->status === 'completed')
+                                    <b class="text-success">
+                                        <i class="fas fa-check-circle"></i> Task Completed
+                                    </b>
+                                @endif
+                                <div class="col-lg-12 col-md-12 col-sm-12">
+                                    <h1 class="timer" style="width: 100%; font-family: 'Courier New', monospace; font-size: 2.5rem; color: #ff3b30; background: #ffffff; padding: 10px; border-radius: 10px; display: inline-block; text-shadow: 2px 2px 5px rgba(255, 59, 48, 0.5);">
+                                        00:00:00
+                                    </h1>
+                                </div>
+                                <div class="col-lg-12 col-md-12 col-sm-12">
+        
+                                    {{-- timer con --}}
                                     
-                                    {{-- Store start time automatically --}}
-                                    <input hidden type="text" name="start_time" value="{{ now()->toDateTimeString() }}">
-                            
-                                    {{-- Store authenticated user ID --}}
-                                    <input hidden type="text" name="users_id" value="{{ Auth::id() }}">
-                            
-                                    {{-- Store task-related IDs --}}
-                                    <input hidden type="text" name="tasks_id" value="{{ $item->id }}">
-                                    <input hidden type="text" name="tasks_projects_id" value="{{ $item->projects->id ?? '' }}">
-                                    <input hidden type="text" name="tasks_projects_workspaces_id" value="{{ $item->workspaces->id ?? '' }}">
-                            
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-play"></i> Start Timer
-                                    </button>
-                                </form>
-                            @endif
+                                    @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->count() === 0)
+                                        <form action="{{ route('tasktimelogs.store') }}" method="POST">
+                                            @csrf
+                                            
+                                            {{-- Store start time automatically --}}
+                                            <input hidden type="text" name="start_time" value="{{ now()->toDateTimeString() }}">
+                                    
+                                            {{-- Store authenticated user ID --}}
+                                            <input hidden type="text" name="users_id" value="{{ Auth::id() }}">
+                                    
+                                            {{-- Store task-related IDs --}}
+                                            <input hidden type="text" name="tasks_id" value="{{ $item->id }}">
+                                            <input hidden type="text" name="tasks_projects_id" value="{{ $item->projects->id ?? '' }}">
+                                            <input hidden type="text" name="tasks_projects_workspaces_id" value="{{ $item->workspaces->id ?? '' }}">
+                                    
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-play"></i> Start Timer
+                                            </button>
+                                        </form>
+                                    @endif
+                
+                                    @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->whereNull('stop_time')->whereNull('pause_time')->exists())
+                                        <form action="{{ route('tasktimelogs.pause', $item->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="pause_time" value="{{ now() }}">
+                                            <button type="submit" class="btn btn-warning"><i class="fas fa-pause"></i> Pause Timer</button>
+                                        </form>
         
-                            @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->whereNull('stop_time')->whereNull('pause_time')->exists())
-                                <form action="{{ route('tasktimelogs.pause', $item->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="pause_time" value="{{ now() }}">
-                                    <button type="submit" class="btn btn-warning"><i class="fas fa-pause"></i> Pause Timer</button>
-                                </form>
-
-                                <form action="{{ route('tasktimelogs.stop', $item->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="pause_time" value="{{ now() }}">
-                                    <button type="submit" class="btn btn-success mt-1"><i class="fas fa-check"></i> Mark As Complete</button>
-                                </form>
-
-                            @endif
+                                        <form action="{{ route('tasktimelogs.stop', $item->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="pause_time" value="{{ now() }}">
+                                            <button type="submit" class="btn btn-success mt-1"><i class="fas fa-check"></i> Mark As Complete</button>
+                                        </form>
         
-                            @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->whereNotNull('pause_time')->whereNull('stop_time')->exists())
-                                <form action="{{ route('tasktimelogs.resume', $item->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="resume_time" value="{{ now() }}">
-                                    <button type="submit" class="btn btn-success"><i class="fas fa-play"></i> Resume Timer</button>
-                                </form>
-                            @endif
+                                    @endif
+                
+                                    @if (App\Models\Tasktimelogs::where('tasks_id', $item->id)->whereNotNull('pause_time')->whereNull('stop_time')->exists())
+                                        <form action="{{ route('tasktimelogs.resume', $item->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="resume_time" value="{{ now() }}">
+                                            <button type="submit" class="btn btn-success"><i class="fas fa-play"></i> Resume Timer</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
-
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Assignees and Roles</h5>
+                            @forelse (App\Models\Taskassignments::where('tasks_id', $item->id)->get() as $assignedUser)
+                                <div class="nav-link">
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <img class="mb-2" src="{{ $assignedUser->users?->profile_photo_path ? url('/storage/' . $assignedUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
+                                        </div>
+                                        <div class="col-10">
+                                            <b>{{ $assignedUser->users?->name ?? "no data" }}</b> <br>
+                                            <small>{{ $assignedUser->role }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <b>No Lead Assignee</b>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class='card'>
@@ -192,7 +218,7 @@
                                             ->toArray();
                                     @endphp
 
-                                    @forelse (App\Models\User::whereNot('role', 'admin')
+                                    @forelse (App\Models\User::whereNot('id', Auth::user()->id)
                                         ->whereNotIn('id', $addedUsers) // Exclude already assigned users
                                         ->whereIn('id', $workspaceUsers) // Only include workspace participants
                                         ->orderBy('id', 'desc')

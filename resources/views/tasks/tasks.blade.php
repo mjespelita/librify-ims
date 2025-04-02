@@ -185,7 +185,7 @@
                                 <b>Assignees:</b>
                                 <div class="task-assignees">
                                     @forelse (App\Models\Taskassignments::where('tasks_id', $item->id)->get() as $taskUser)
-                                        <img src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User">
+                                        <a href="{{ url('show-technicians/'.$taskUser->users_id) }}"><img src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User"></a>
                                     @empty
                                         <span>No Assignees</span>
                                     @endforelse

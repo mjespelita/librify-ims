@@ -104,7 +104,7 @@
                                     <b class="text-danger">{{ App\Models\Damages::where('sites_id', $item->id)->count() }}</b>
                                 </td>
                                 <td>
-                                    {{ $item->users->name." (".$item->users->role.")" ?? "no data" }}
+                                    {{ $item->users->name ?? "no data" }}
                                 </td>
                                 <td>
                                     <a href='{{ route('sites.show', $item->id) }}'><i class='fas fa-eye text-success'></i></a>

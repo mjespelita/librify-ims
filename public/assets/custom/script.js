@@ -1,5 +1,83 @@
 $(document).ready(function() {
 
+    // employee details chart
+
+    // Get the current URL path
+// Get the current URL path
+let path = window.location.pathname;
+
+// Get the last segment (user ID)
+let lastId = path.split('/').filter(Boolean).pop();
+
+// Fetch task data
+$.get('/get-employee-task-count/' + lastId, function (res) {
+    console.log(res); // Debugging: check API response
+
+    // Get current date details
+    const thisDay = new Date();
+    const currentYear = thisDay.getFullYear();
+    const currentMonth = thisDay.getMonth(); // 0-based (March = 2)
+    const currentDay = thisDay.getDate(); // Today's day (e.g., 15)
+
+    // Get last day of the current month
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    // Get full month name
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(thisDay);
+
+    // Prepare arrays for chart data
+    const categories = [];
+    const pendingData = [];
+    const completedData = [];
+
+    // Convert API response into a dictionary for quick lookup
+    const taskDataMap = {};
+    res.forEach(item => {
+        taskDataMap[item.date] = item; // Store by date
+    });
+
+    // Loop through days of the current month
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+        let dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        categories.push(`${monthName} ${day}`); // Example: "March 1", "March 2"
+
+        // Get pending/completed count from API response, default to 0 if missing
+        pendingData.push(taskDataMap[dateStr] ? taskDataMap[dateStr].pending : 0);
+        completedData.push(taskDataMap[dateStr] ? taskDataMap[dateStr].completed : 0);
+    }
+
+    // Render chart
+    var lineChartEmployeeDetailsOptions = {
+        chart: {
+            type: 'line',
+            height: 300,
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        colors: ["#FF1654", "#198754"],
+        series: [
+            {
+                name: 'Pending',
+                data: pendingData
+            },
+            {
+                name: 'Completed',
+                data: completedData
+            }
+        ],
+        xaxis: {
+            categories: categories
+        }
+    };
+
+    var lineChartEmployeeDetails = new ApexCharts(document.querySelector("#lineChartEmployeeDetails"), lineChartEmployeeDetailsOptions);
+    lineChartEmployeeDetails.render();
+});
+
+
+
     $(".search-my-tasks").on("keyup", function() {
         var value = $(this).val().toLowerCase();
         $(".task-card").filter(function() {
@@ -36,29 +114,6 @@ $(document).ready(function() {
         var pieChartItems = new ApexCharts(document.querySelector("#pie-chart-item-overview"), pieChartItemsOverviewOptions);
         pieChartItems.render();
     })
-
-    var lineChartOptions = {
-        chart: {
-            type: 'line',
-        },
-        colors: ["#FF1654", "#247BA0"],
-        series: [{
-                name: 'sales',
-                data: [30, 40, 35, 50, 49, 60, 70, 91, 125]
-            },
-            {
-                name: 'sales 1',
-                data: [20, 31, 35, 66, 77, 34, 78, 77, 100]
-            }
-        ],
-        xaxis: {
-            categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
-        }
-    }
-
-    var lineChart = new ApexCharts(document.querySelector("#lineChart"), lineChartOptions);
-
-    lineChart.render();
 
     // Bar chart onsite
 
@@ -305,10 +360,11 @@ $(document).ready(function() {
         });
     });
 
-
     let currentDate = new Date();
     let selectedDate = null;
-    let today = new Date().toISOString().split("T")[0];
+
+    // ✅ Fixed: Ensure the correct local date (prevents time zone shift issues)
+    let today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
 
     function renderCalendar() {
         const monthYear = document.getElementById("month-year");
@@ -326,23 +382,25 @@ $(document).ready(function() {
         let firstDay = new Date(year, month, 1).getDay();
         let lastDate = new Date(year, month + 1, 0).getDate();
 
+        // Add empty divs for alignment (days before first day of the month)
         for (let i = 0; i < firstDay; i++) {
             let emptyDiv = document.createElement("div");
             daysContainer.appendChild(emptyDiv);
         }
 
+        // Generate day elements
         for (let day = 1; day <= lastDate; day++) {
             let dayDiv = document.createElement("div");
             dayDiv.textContent = day;
             dayDiv.classList.add("day");
-            let dateStr = new Date(year, month, day).toISOString().split("T")[0];
-            dayDiv.dataset.date = dateStr;
+            let dateStr = new Date(year, month, day).toLocaleDateString('en-CA');
 
+            dayDiv.dataset.date = dateStr;
             if (dateStr === today) {
                 dayDiv.classList.add("today");
             }
 
-            dayDiv.addEventListener("click", function() {
+            dayDiv.addEventListener("click", function () {
                 if (selectedDate) {
                     selectedDate.classList.remove("selected");
                 }
@@ -355,35 +413,28 @@ $(document).ready(function() {
         }
     }
 
-    function prevMonth() {
-        currentDate.setMonth(currentDate.getMonth() - 1);
+    function changeMonth(offset) {
+        currentDate.setMonth(currentDate.getMonth() + offset);
         renderCalendar();
     }
 
-    function nextMonth() {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    }
-
-    $('.prevMonth').click(function () {
-        prevMonth();
-    })
-
-    $('.nextMonth').click(function () {
-        nextMonth();
-    })
+    // Event listeners for previous/next month
+    document.querySelector(".prevMonth").addEventListener("click", () => changeMonth(-1));
+    document.querySelector(".nextMonth").addEventListener("click", () => changeMonth(1));
 
     function populateTimeSelectors() {
         const hourPicker = document.getElementById("hourPicker");
         const minutePicker = document.getElementById("minutePicker");
 
+        // Populate hour selector (1-12)
         for (let i = 1; i <= 12; i++) {
             let option = document.createElement("option");
             option.value = i.toString().padStart(2, '0');
-            option.textContent = i.toString();
+            option.textContent = i;
             hourPicker.appendChild(option);
         }
 
+        // Populate minute selector (00, 05, 10... 55)
         for (let i = 0; i < 60; i += 5) {
             let option = document.createElement("option");
             option.value = i.toString().padStart(2, '0');
@@ -402,14 +453,17 @@ $(document).ready(function() {
             if (ampm === "PM" && hour < 12) hour += 12;
             if (ampm === "AM" && hour === 12) hour = 0;
 
-            document.getElementById("deadline").value = `${selectedDate.dataset.date}T${hour.toString().padStart(2, '0')}:${selectedMinute}`;
+            document.getElementById("deadline").value = 
+                `${selectedDate.dataset.date}T${hour.toString().padStart(2, '0')}:${selectedMinute}`;
         }
     }
 
+    // Attach event listeners to update deadline input on change
     document.getElementById("hourPicker").addEventListener("change", updateDeadlineInput);
     document.getElementById("minutePicker").addEventListener("change", updateDeadlineInput);
     document.getElementById("ampmPicker").addEventListener("change", updateDeadlineInput);
 
+    // Initialize
     populateTimeSelectors();
     renderCalendar();
 

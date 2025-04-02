@@ -250,7 +250,7 @@
                                                     @forelse (App\Models\Taskassignments::where('tasks_id', $task->id)->get() as $taskUser)
                                                         <img class="mb-2" src="{{ $taskUser->users?->profile_photo_path ? url('/storage/' . $taskUser->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" height="40" width="40" style="border-radius: 50%;" alt="User Profile Photo">
                                                     @empty
-                                                        <b>No Collaborators</b>
+                                                        <b>No Assignees</b>
                                                     @endforelse    
                                                 </td>
                                                 <td>

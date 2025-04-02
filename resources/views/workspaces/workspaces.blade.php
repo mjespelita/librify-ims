@@ -160,7 +160,7 @@
                             <b>Participants:</b>
                             <div class="workspace-participants">
                                 @forelse (App\Models\Workspaceusers::where('workspaces_id', $item->id)->get() as $workspaceUser)
-                                    <img src="{{ $workspaceUser->users->profile_photo_path ?? '' ? url('/storage/' . $workspaceUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User">
+                                    <a href="{{ url('/show-technicians/'.$workspaceUser->users_id) }}"><img src="{{ $workspaceUser->users->profile_photo_path ?? '' ? url('/storage/' . $workspaceUser->users->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" alt="User"></a>
                                 @empty
                                     <span>No Participants</span>
                                 @endforelse

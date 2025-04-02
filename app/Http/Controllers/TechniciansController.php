@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Logs, Technicians, User};
+use App\Models\{Logs, Taskassignments, Tasks, Technicians, User};
 use App\Http\Requests\StoreTechniciansRequest;
 use App\Http\Requests\UpdateTechniciansRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -72,7 +73,15 @@ class TechniciansController extends Controller {
     public function show(Technicians $technicians, $techniciansId)
     {
         return view('technicians.show-technicians', [
-            'item' => User::where('id', $techniciansId)->first()
+            'item' => User::where('id', $techniciansId)->first(),
+            'taskAssignments' => Taskassignments::where('users_id', $techniciansId)
+                                      ->whereDate('created_at', Carbon::today())
+                                      ->orderBy('id', 'desc')
+                                      ->paginate(20),
+            'unfinished_taskAssignments' => Taskassignments::where('users_id', $techniciansId)
+                ->whereHas('tasks', function ($query) {
+                    $query->where('status', 'pending');
+                })->orderBy('id', 'desc')->paginate(20),
         ]);
     }
 
