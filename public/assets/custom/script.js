@@ -1,8 +1,5 @@
 $(document).ready(function() {
-
-    // employee details chart
-
-    // Get the current URL path
+    
 // Get the current URL path
 let path = window.location.pathname;
 
@@ -11,7 +8,6 @@ let lastId = path.split('/').filter(Boolean).pop();
 
 // Fetch task data
 $.get('/get-employee-task-count/' + lastId, function (res) {
-    console.log(res); // Debugging: check API response
 
     // Get current date details
     const thisDay = new Date();

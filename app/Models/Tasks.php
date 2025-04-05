@@ -35,4 +35,9 @@ protected $fillable = ["name","status","projects_id","projects_workspaces_id","i
     {
         return $this->hasMany(Tasktimelogs::class);
     }
+
+    public function internalNotifications()
+    {
+        return $this->hasMany(InternalNotification::class);
+    }
 }

@@ -83,6 +83,11 @@
                 class='{{ request()->is('tasks', 'trash-tasks', 'create-tasks', 'show-tasks/*', 'edit-tasks/*', 'delete-tasks/*', 'tasks-search*') ? 'active' : '' }}'>
                 <i class='fas fa-tasks'></i> Tasks
                 </a>
+
+                <a href='{{ url('notifications') }}' 
+                class='{{ request()->is('notifications', 'trash-notifications', 'create-notifications', 'show-notifications/*', 'edit-notifications/*', 'delete-notifications/*', 'notifications-search*') ? 'active' : '' }}'>
+                <i class='fas fa-bell'></i> Notifications
+                </a>
             @endif
 
             @if (Auth::user()->role === 'technician')
@@ -111,6 +116,11 @@
                     <i class='fas fa-tasks'></i> My Tasks
                 </a>
 
+                <a href='{{ url('notifications') }}' 
+                class='{{ request()->is('notifications', 'trash-notifications', 'create-notifications', 'show-notifications/*', 'edit-notifications/*', 'delete-notifications/*', 'notifications-search*') ? 'active' : '' }}'>
+                <i class='fas fa-bell'></i> Notifications
+                </a>
+
             @endif  
 
             @if (Auth::user()->role === 'employee')
@@ -122,6 +132,11 @@
                 <a href='{{ url('my-tasks') }}' 
                     class='{{ request()->is('my-tasks', 'show-tasks/*', 'trash-my-tasks', 'create-my-tasks', 'show-my-tasks/*', 'edit-my-tasks/*', 'delete-my-tasks/*', 'my-tasks-search*') ? 'active' : '' }}'>
                     <i class='fas fa-tasks'></i> My Tasks
+                </a>
+
+                <a href='{{ url('notifications') }}' 
+                class='{{ request()->is('notifications', 'trash-notifications', 'create-notifications', 'show-notifications/*', 'edit-notifications/*', 'delete-notifications/*', 'notifications-search*') ? 'active' : '' }}'>
+                <i class='fas fa-bell'></i> Notifications
                 </a>
 
             @endif  

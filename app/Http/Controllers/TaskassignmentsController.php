@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Comments, Logs, Taskassignments, Tasks, Tasktimelogs, User};
+use App\Models\{Comments, InternalNotification, Logs, Taskassignments, Tasks, Tasktimelogs, User};
 use App\Http\Requests\StoreTaskassignmentsRequest;
 use App\Http\Requests\UpdateTaskassignmentsRequest;
 use Carbon\Carbon;
@@ -126,6 +126,12 @@ class TaskassignmentsController extends Controller {
             'hasImage' => 0,
         ]);
 
+        InternalNotification::create([
+            'users_senders_id' => Auth::user()->id,
+            'tasks_id' => $request->tasks_id,
+            'notification' => Auth::user()->name ." (".Auth::user()->role.") assigned you on the task ".Tasks::where('id', $request->tasks_id)->value('name')
+        ]);
+
         /* Log ************************************************** */
         // Logs::create(['log' => Auth::user()->name.' created a new Taskassignments '.'"'.$request->name.'"']);
         /******************************************************** */
@@ -236,6 +242,12 @@ class TaskassignmentsController extends Controller {
         ]);
 
         Taskassignments::where('id', $taskassignmentsId)->delete();
+
+        InternalNotification::create([
+            'users_senders_id' => Auth::user()->id,
+            'tasks_id' => $taskId,
+            'notification' => Auth::user()->name ." (".Auth::user()->role.") removed you as assignee on the task ".Tasks::where('id', $taskId)->value('name')
+        ]);
 
         return back();
     }

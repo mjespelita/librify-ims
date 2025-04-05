@@ -24,7 +24,7 @@ body {
     url("https://db.onlinewebfonts.com/t/a81c6ef023e90fb9f87ac017d242a337.svg#Montserrat")format("svg");
 }
 
-h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
+h1,h2,h3,h4,h5,h6,p,a,span,td,label,input,th{
     font-family: Poppins !important;
 }
 
@@ -268,7 +268,7 @@ h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
 /* comment chat */
 
 
-.chat-container {
+/* .chat-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -301,11 +301,111 @@ h1,h2,h3,h4,h5,h6,p,a,span,td,label,input{
     background-color: none;
     color: black;
     align-self: flex-end;
+} */
+
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 100%;
+    margin: auto;
+    height: 45vh;
+    overflow-x: hidden;
+    padding: 10px;
 }
-.no-messages {
-    text-align: center;
-    color: gray;
+
+/* Chat item container */
+.chat-item {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
 }
+
+/* Left-aligned messages (current user) */
+.chat-item.left {
+    align-self: flex-start;
+    text-align: left;
+}
+
+/* Right-aligned messages (other users) */
+.chat-item.right {
+    align-self: flex-end;
+    text-align: right;
+}
+
+/* Profile images aligned properly */
+.chat-item.left img {
+    align-self: flex-start;
+}
+
+.chat-item.right img {
+    align-self: flex-end;
+}
+
+/* Chat bubbles */
+.chat-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+/* User's own messages */
+.left .chat-bubble {
+    background-color: #dbdbdb;
+    color: black;
+    align-self: flex-start;
+}
+
+/* Other users' messages */
+.right .chat-bubble {
+    background-color: #f1f1f1;
+    color: black;
+    align-self: flex-end;
+}
+
+/* Usernames aligned */
+.left .mine-name, 
+.right .other-name {
+    font-weight: bold;
+}
+
+/* Profile images aligned correctly */
+.left img,
+.right img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+/* Comment images aligned properly */
+.comment-images {
+    margin-top: 5px;
+    display: flex;
+    /* flex-direction: column; */
+}
+
+/* Left-aligned images */
+.comment-images-left {
+    align-self: flex-start;
+}
+
+/* Right-aligned images */
+.comment-images-right {
+    align-self: flex-end;
+}
+
+/* Comment image styles */
+.comment-image {
+    border-radius: 20px;
+    width: 200px;
+    display: block;
+    margin-top: 5px;
+}
+
+
+
 
 
 .disabled-link {

@@ -129,6 +129,9 @@ Route::middleware([
     Route::get('/view-my-damaged-items-on-site/{siteId}', [RandomController::class, 'viewMyDamagedItemsOnSite']);
     Route::get('/my-sites', [RandomController::class, 'mySites']);
     Route::get('/my-tasks', [TasksController::class, 'myTasks']);
+    Route::get('/notifications', function () {
+        return view('notifications');
+    });
 
     Route::get('/my-tasks-filter', function (Request $request) {
         $from = $request->input('from');
@@ -248,7 +251,6 @@ Route::middleware([
     });
     
     
-
     Route::get('/get-item-data-for-graph', function () {
         return response()->json([
             'inWarehousesCount' => Items::sum('quantity') - Onsites::sum('quantity') - Damages::sum('quantity'),
@@ -347,6 +349,33 @@ Route::middleware([
         return response()->json([
             'serial_numbers' => array_values($validSerialNumbers), // Ensure it's an indexed array
         ], 200); // Optionally specify the status code
+    });
+
+    Route::get('/comments/{taskId}', function ($taskId, Request $request) {
+        $authId = Auth::user()->id; // Get authenticated user ID
+    
+        $comments = Comments::where('tasks_id', $taskId)
+            ->with(['users', 'files'])
+            ->latest()
+            ->get()
+            ->map(function ($comment) use ($authId) {
+                return [
+                    'id' => $comment->id,
+                    'comment_position' => $authId === $comment->users_id ? 'left' : 'right',
+                    'users_id'   => $comment->users_id,
+                    'auth_id'    => $authId, // Include authenticated user ID
+                    'user'       => [
+                        'name'               => $comment->users?->name ?? 'No Name',
+                        'profile_photo_path' => $comment->users?->profile_photo_path,
+                    ],
+                    'comment'    => $comment->comment,
+                    'created_at' => $comment->created_at,
+                    'hasImage'   => $comment->hasImage,
+                    'files'      => $comment->files->map(fn ($file) => ['file' => $file->file]),
+                ];
+            });
+    
+        return response()->json($comments);
     });
 
     Route::get('/get-tasktimelogs/{taskId}', function ($tasksId) {

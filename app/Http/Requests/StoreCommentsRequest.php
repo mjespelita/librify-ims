@@ -28,7 +28,7 @@ class StoreCommentsRequest extends FormRequest
             'tasks_projects_id' => 'required',
             'tasks_projects_workspaces_id' => 'required',
             'users_id' => 'required',
-            'files.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp,xlsx,xls,csv,pdf,doc,docx',
         ];
     }
 }

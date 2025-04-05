@@ -43,4 +43,4 @@ Artisan::command('sched', function () {
         }
     }
 
-})->purpose('Scheduled Tasks')->dailyAt('10:03');
+})->purpose('Scheduled Tasks')->dailyAt('08:00');

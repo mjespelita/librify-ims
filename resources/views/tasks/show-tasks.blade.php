@@ -208,12 +208,12 @@
                                 <select class="form-control" name="users_id" required>
                                     @php
                                         // Get users already assigned to the task
-                                        $addedUsers = App\Models\TaskAssignments::where('tasks_id', $item->id)
+                                        $addedUsers = App\Models\Taskassignments::where('tasks_id', $item->id)
                                             ->pluck('users_id')
                                             ->toArray();
 
                                         // Get users who are participants in the workspace
-                                        $workspaceUsers = App\Models\WorkspaceUsers::where('workspaces_id', $item->projects_workspaces_id)
+                                        $workspaceUsers = App\Models\Workspaceusers::where('workspaces_id', $item->projects_workspaces_id)
                                             ->pluck('users_id')
                                             ->toArray();
                                     @endphp
@@ -287,7 +287,12 @@
                     
                     <div class='chat-container'>
 
-                        @forelse(App\Models\Comments::where('tasks_id', $item->id)->with('files')->get() as $comment)
+                        <div style="align-items: center; justify-content: center; display: flex; height: 100%">
+                            <b>Loading Comments...</b>
+                            <div class="spinner-border"></div>
+                        </div>
+
+                        {{-- @forelse(App\Models\Comments::where('tasks_id', $item->id)->with('files')->get() as $comment)
                             @php $isMine = auth()->id() == $comment->users_id; @endphp
                             <img class="mb-2 {{ $isMine ? 'mine' : 'other' }}" 
                                 src="{{ $comment->users?->profile_photo_path ? url('/storage/' . $comment->users?->profile_photo_path) : '/assets/profile_photo_placeholder.png' }}" 
@@ -301,7 +306,6 @@
                                 <p>{{ Smark\Smark\HTML::renderHTML(Smark\Smark\HTML::withUrl($comment->comment)) }}</p>
                             </div>
 
-                            {{-- Check if comment has images and display them --}}
                             @if($comment->hasImage)
                                 <div class="comment-images {{ $isMine ? 'mine-name' : 'other-name' }}">
                                     @foreach(App\Models\CommentFiles::where('comments_id', $comment->id)->get() as $file)
@@ -313,23 +317,13 @@
                             @endif
                         @empty
                             <p class='no-messages'>No comments yet...</p>
-                        @endforelse
+                        @endforelse --}}
 
                         <div id="latest-comment"></div>
                     </div>
 
                     <script>
-                        document.addEventListener("DOMContentLoaded", function() {
-                            var latestComment = document.getElementById("latest-comment");
-                            var parentDiv = latestComment?.closest(".chat-container");
-                    
-                            if (latestComment && parentDiv) {
-                                parentDiv.scrollTo({ 
-                                    top: latestComment.offsetTop - parentDiv.offsetTop, 
-                                    behavior: "smooth" 
-                                });
-                            }
-                        });
+                        
                     </script>
                 </div>
             </div>
@@ -354,7 +348,7 @@
                             <textarea name="comment" id="" cols="20" rows="2" class="form-control" required></textarea>
                         </div>
 
-                        <input type="file" id="fileInput" name="files[]" hidden multiple accept="image/*">
+                        <input type="file" id="fileInput" name="files[]" hidden multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv">
                     
                         <div class='form-group'>
                             {{-- <label for='name'>Tasks_id</label> --}}
@@ -386,31 +380,43 @@
 
                     <script>
                         document.getElementById("fileInput").addEventListener("change", function (event) {
-                            let files = event.target.files;
-                            let previewContainer = document.getElementById("image-preview");
+                            const files = event.target.files;
+                            const previewContainer = document.getElementById("image-preview");
                             previewContainer.innerHTML = ""; // Clear previous previews
-
-                            Array.from(files).forEach((file, index) => {
-                                let reader = new FileReader();
-                                reader.onload = function (e) {
-                                    let div = document.createElement("div");
-                                    div.classList.add("preview-container");
-
-                                    let img = document.createElement("img");
-                                    img.src = e.target.result;
-
-                                    let removeBtn = document.createElement("button");
-                                    removeBtn.innerHTML = "×";
-                                    removeBtn.classList.add("remove-btn");
-                                    removeBtn.onclick = function () {
-                                        div.remove();
+                    
+                            Array.from(files).forEach((file) => {
+                                const div = document.createElement("div");
+                                div.classList.add("preview-container");
+                    
+                                const removeBtn = document.createElement("button");
+                                removeBtn.innerHTML = "×";
+                                removeBtn.classList.add("remove-btn");
+                                removeBtn.onclick = function () {
+                                    div.remove();
+                                };
+                    
+                                if (file.type.startsWith("image/")) {
+                                    const reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        const img = document.createElement("img");
+                                        img.src = e.target.result;
+                                        div.appendChild(img);
+                                        div.appendChild(removeBtn);
+                                        previewContainer.appendChild(div);
                                     };
-
-                                    div.appendChild(img);
+                                    reader.readAsDataURL(file);
+                                } else {
+                                    // Handle non-image files (pdf, docx, etc.)
+                                    const fileIcon = document.createElement("div");
+                                    fileIcon.classList.add("file-icon");
+                                    fileIcon.innerHTML = `
+                                        <div class="file-thumb">📄</div>
+                                        <div class="file-name">${file.name}</div>
+                                    `;
+                                    div.appendChild(fileIcon);
                                     div.appendChild(removeBtn);
                                     previewContainer.appendChild(div);
-                                };
-                                reader.readAsDataURL(file);
+                                }
                             });
                         });
                     </script>
@@ -422,12 +428,126 @@
     {{-- <a href='{{ route('tasks.index') }}' class='btn btn-primary'>Back to List</a> --}}
 
     <script src='{{ url('assets/jquery/jquery.min.js') }}'></script>
+    <script src='{{ url('assets/pollinator/pollinator.min.js') }}'></script>
+    <script src='{{ url('assets/pollinator/polly.js') }}'></script>
     <script>
+
         $(document).ready(function () {
+            
             const urlSegments = window.location.pathname.split('/');
             const taskId = urlSegments[urlSegments.length - 1];
 
-            console.log("Task ID:", taskId); // Debugging
+            // function playNotificationSound() {
+            //     let audio = new Audio();
+            //     audio.play().catch(error => console.error("Error playing sound:", error));
+            // }
+
+            function playNotificationSound() {
+                let audio = new Audio('../assets/ringtone.m4a');
+
+                document.addEventListener("click", () => {
+                    audio.play();
+                }, { once: true });
+            }
+
+            function fetchComments(taskId) {
+
+                const polling = new PollingManager({
+                    url: `/comments/${taskId}`, // API to fetch data
+                    delay: 5000, // Poll every 5 seconds
+                    failRetryCount: 3, // Retry on failure
+                    onSuccess: (comments) => {
+
+                        let isNewMessage = false;
+
+                        $('.chat-container').empty(); // Clear previous comments
+
+                        if (comments.length === 0) {
+                            $('.chat-container').append("<p class='no-messages'>No comments yet...</p>");
+                            return;
+                        }
+
+                        comments.forEach(comment => {
+
+                            let isMine = comment.users_id === comment.auth_id; // Compare users_id with auth_id
+                            let positionClass = comment.comment_position; // 'left' or 'right'
+                            let userImage = comment.user.profile_photo_path 
+                                ? `/storage/${comment.user.profile_photo_path}` 
+                                : "/assets/profile_photo_placeholder.png";
+
+                            let commentHTML = `
+                                <div class="chat-item ${positionClass}">
+                                    <img class="mb-2" src="${userImage}" alt="User Profile Photo">
+                                    <small class="${positionClass === 'left' ? 'mine-name' : 'other-name'}">
+                                        ${comment.user.name} - ${new Date(comment.created_at).toLocaleString()}
+                                    </small>
+                                    <div class="chat-bubble">
+                                        <p>${comment.comment}</p>
+                                    </div>
+                                </div>
+                            `;
+
+                            $('.chat-container').append(commentHTML);
+
+                            // Append images or file icons if available
+                            if (comment.hasImage && comment.files.length > 0) {
+                                let imageContainer = `<div class="comment-images ${positionClass === 'left' ? 'mine-name comment-images-left' : 'other-name comment-images-right'}">`;
+
+                                comment.files.forEach(file => {
+                                    const fileUrl = `/storage/files/${file.file}`;
+                                    const extension = file.file.split('.').pop().toLowerCase();
+
+                                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
+
+                                    if (isImage) {
+                                        // Show image preview
+                                        imageContainer += `
+                                            <a href="${fileUrl}" target="_blank">
+                                                <img src="${fileUrl}" alt="Comment Image" class="comment-image mb-2">
+                                            </a>
+                                        `;
+                                    } else {
+                                        // Select icon based on file type
+                                        let iconClass = 'fas fa-file'; // default
+
+                                        if (['pdf'].includes(extension)) iconClass = 'fas fa-file-pdf text-danger';
+                                        else if (['doc', 'docx'].includes(extension)) iconClass = 'fas fa-file-word text-primary';
+                                        else if (['xls', 'xlsx', 'csv'].includes(extension)) iconClass = 'fas fa-file-excel text-success';
+
+                                        imageContainer += `
+                                            <a href="${fileUrl}" target="_blank" class="file-icon-link d-inline-block text-center me-2 mb-2" style="width: 100px;">
+                                                <i class="${iconClass}" style="font-size: 40px;"></i><br>
+                                                <small>${file.file}</small>
+                                            </a>
+                                        `;
+                                    }
+                                });
+
+                                imageContainer += `</div>`;
+                                $('.chat-container').append(imageContainer);
+                            }
+
+                            isNewMessage = true;
+                        });
+
+                        // Play sound if new messages are detected
+                        if (isNewMessage) {
+                            playNotificationSound();
+                        }
+                    },
+                    onError: (error) => {
+                        console.error("Error fetching data:", error);
+                        // Your custom error handling logic
+                    }
+                });
+
+                // Start polling
+                polling.start();
+            }
+
+            fetchComments(taskId)
+
+            // timer
 
             function formatTime(seconds) {
                 const hrs = Math.floor(seconds / 3600);
@@ -454,7 +574,6 @@
 
             $.get('/get-tasktimelogs/' + taskId, function (res) {
                 if (res.taskTimeLog.status === "running") {
-                    console.log(res.taskTimeLog);
                     updateTimer(res.taskTimeLog.elapsed_time, res.taskTimeLog.updated_at);
                 } else if (res.taskTimeLog.status === "paused") {
                     $(".timer").text(formatTime(res.taskTimeLog.elapsed_time)); // Show static elapsed time

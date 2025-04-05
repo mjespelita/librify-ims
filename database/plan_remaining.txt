@@ -39,7 +39,6 @@ ok - if admin mag add?
 
 ok dashboard graph fix
 
-
 --- page that has serial number
 
 /create-items
@@ -63,6 +62,9 @@ ok - schedule repeated
 auto - start
 Grading of task quality
 
+ok - internal notification
+ok - can send any forms of files.
+
 ok - fix the my-task page of employee dashboard face
 ok - edit the edit task - priority update
-fix calendar - unreliable date
+ok - fix calendar - unreliable date

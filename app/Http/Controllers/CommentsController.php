@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{CommentFiles, Logs, Comments};
+use App\Models\{CommentFiles, Logs, Comments, InternalNotification, Tasks};
 use App\Http\Requests\StoreCommentsRequest;
 use App\Http\Requests\UpdateCommentsRequest;
 use Illuminate\Http\Request;
@@ -81,9 +81,13 @@ class CommentsController extends Controller {
             }
         }
 
-        /* Log ************************************************** */
-        // Logs::create(['log' => Auth::user()->name.' created a new Comments '.'"'.$request->name.'"']);
-        /******************************************************** */
+        InternalNotification::create([
+            'users_senders_id' => Auth::user()->id,
+            'tasks_id' => $request->tasks_id,
+            'notification' => Auth::user()->name ." (".Auth::user()->role.") commented on the task ".Tasks::where('id', $request->tasks_id)->value('name')." - ".$request->comment
+        ]);
+
+
 
         return back();
     }

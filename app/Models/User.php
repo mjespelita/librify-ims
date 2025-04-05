@@ -110,4 +110,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tasktimelogs::class);
     }
+
+    public function internalNotifications()
+    {
+        return $this->hasMany(InternalNotification::class);
+    }
 }
