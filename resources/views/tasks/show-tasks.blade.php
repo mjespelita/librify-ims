@@ -531,9 +531,9 @@
                         });
 
                         // Play sound if new messages are detected
-                        if (isNewMessage) {
-                            playNotificationSound();
-                        }
+                        // if (isNewMessage) {
+                        //     playNotificationSound();
+                        // }
                     },
                     onError: (error) => {
                         console.error("Error fetching data:", error);

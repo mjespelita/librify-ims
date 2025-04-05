@@ -40,6 +40,51 @@ class TechniciansController extends Controller {
         return redirect('/technicians');
     }
 
+    public function updateEmployeeProfile(Request $request, $userId)
+    {
+        $request->validate([
+            'firstname' => 'string|max:255',
+            'middlename' => 'nullable|string|max:255',
+            'lastname' => 'string|max:255',
+            'dateofbirth' => 'nullable|date',  // Validate date format
+            'gender' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:100',
+            'maritalstatus' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',  // You can adjust the length as needed
+            'emergencycontact' => 'nullable|string|max:20',
+            'employeeid' => 'nullable|string|max:50',
+            'jobtitle' => 'nullable|string|max:100',
+            'department' => 'nullable|string|max:100',
+            'sss' => 'nullable|string|max:50',  // Add specific validation if you want to ensure the format
+            'pagibig' => 'nullable|string|max:50',
+            'philhealth' => 'nullable|string|max:50',
+        ]);
+
+        // Update the user's details with validated data
+        User::where('id', $userId)->update([
+            'firstname' => $request->firstname,
+            'middlename' => $request->middlename,
+            'lastname' => $request->lastname,
+            'dateofbirth' => $request->dateofbirth,
+            'gender' => $request->gender,
+            'nationality' => $request->nationality,
+            'maritalstatus' => $request->maritalstatus,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'emergencycontact' => $request->emergencycontact,
+            'employeeid' => $request->employeeid,
+            'jobtitle' => $request->jobtitle,
+            'department' => $request->department,
+            'sss' => $request->sss,
+            'pagibig' => $request->pagibig,
+            'philhealth' => $request->philhealth
+        ]);
+
+        return back();
+        
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -53,7 +98,7 @@ class TechniciansController extends Controller {
      */
     public function store(StoreTechniciansRequest $request)
     {
-        User::create([
+        $newUser = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -61,10 +106,10 @@ class TechniciansController extends Controller {
         ]);
 
         /* Log ************************************************** */
-        Logs::create(['log' => Auth::user()->name.' created a new Technicians '.'"'.$request->name.'"']);
+        Logs::create(['log' => Auth::user()->name.' created a new employee '.'"'.$request->name.'"']);
         /******************************************************** */
 
-        return back()->with('success', 'Technicians Added Successfully!');
+        return redirect('show-technicians/'.$newUser->id);
     }
 
     /**

@@ -64,6 +64,7 @@ Grading of task quality
 
 ok - internal notification
 ok - can send any forms of files.
+ok - employee profiling
 
 ok - fix the my-task page of employee dashboard face
 ok - edit the edit task - priority update

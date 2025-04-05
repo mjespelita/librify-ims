@@ -68,76 +68,76 @@
                         </div>
 
                         <div class='table-responsive'>
-                            <table class='table'>
+                            <table class="table">
                                 <tr>
                                     <th><h5>Personal Information</h5></th>
                                 </tr>
                                 <tr>
                                     <th>Full Name</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ ($item->lastname ?? '') . ', ' . ($item->firstname ?? '') . ' ' . ($item->middlename ?? '') ?: 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Date of Birth</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ Smark\Smark\Dater::humanReadableDateWithDayAndTime($item->dateofbirth) ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Gender</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->gender ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Nationality</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->nationality ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Marital Status</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->maritalstatus ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th><h5>Contact Information</h5></th>
                                 </tr>
                                 <tr>
                                     <th>Residential Address</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->address ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Mobile Number</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->phone ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Emergency Contact</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->emergencycontact ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Employee ID / Staff Number</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->employeeid ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th><h5>Employment Details</h5></th>
                                 </tr>
                                 <tr>
                                     <th>Job Title / Designation</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->jobtitle ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Department / Team</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->department ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th><h5>Benefits & Insurance</h5></th>
                                 </tr>
                                 <tr>
                                     <th>Social Security Number</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->sss ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Pag-IBIG Member ID</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->pagibig ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Philhealth ID</th>
-                                    <td>{{ "N/A" }}</td>
+                                    <td>{{ $item->philhealth ?? 'N/A' }}</td>
                                 </tr>
-                            </table>
+                            </table>                            
                         </div>
 
                         <!-- Modal Structure -->
@@ -153,117 +153,118 @@
                                         <!-- Section: Personal Information -->
                                         <fieldset class="border p-3 mb-4">
                                             <legend class="w-auto px-2">Personal Information</legend>
-
+                                    
                                             <div class="row mb-3">
                                                 <div class="col-md-4">
                                                     <label for="firstName" class="form-label">First Name</label>
-                                                    <input type="text" class="form-control" id="firstName" name="firstname" required>
+                                                    <input type="text" class="form-control" id="firstName" name="firstname" value="{{ $item->firstname ?? '' }}">
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="middleName" class="form-label">Middle Name</label>
-                                                    <input type="text" class="form-control" id="middleName" name="middlename" required>
+                                                    <input type="text" class="form-control" id="middleName" name="middlename" value="{{ $item->middlename ?? '' }}">
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="lastName" class="form-label">Last Name</label>
-                                                    <input type="text" class="form-control" id="lastName" name="lastname" required>
+                                                    <input type="text" class="form-control" id="lastName" name="lastname" value="{{ $item->lastname ?? '' }}">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="dob" class="form-label">Date of Birth</label>
-                                                    <input type="date" class="form-control" id="dob" name="dateofbirth" required>
+                                                    <input type="date" class="form-control" id="dob" name="dateofbirth" value="{{ $item->dateofbirth ?? '' }}">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="gender" class="form-label">Gender</label>
                                                     <select class="form-select" id="gender" name="gender">
-                                                    <option selected disabled>Select...</option>
-                                                        <option value="male">Male</option>
-                                                        <option value="female">Female</option>
+                                                        <option value="male" {{ $item->gender == 'male' ? 'selected' : '' }}>Male</option>
+                                                        <option value="female" {{ $item->gender == 'female' ? 'selected' : '' }}>Female</option>
                                                     </select>
                                                 </div>
                                             </div>
-
+                                    
                                             <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="nationality" class="form-label">Nationality</label>
-                                                <input type="text" class="form-control" id="nationality" name="nationality">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="maritalStatus" class="form-label">Marital Status</label>
-                                                <select class="form-select" id="maritalStatus" name="maritalstatus">
-                                                <option selected disabled>Select...</option>
-                                                <option value="single">Single</option>
-                                                <option value="married">Married</option>
-                                                <option value="divorced">Divorced</option>
-                                                <option value="widowed">Widowed</option>
-                                                </select>
-                                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="nationality" class="form-label">Nationality</label>
+                                                    <input type="text" class="form-control" id="nationality" name="nationality" value="{{ $item->nationality ?? '' }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="maritalStatus" class="form-label">Marital Status</label>
+                                                    <select class="form-select" id="maritalStatus" name="maritalstatus">
+                                                        <option value="single" {{ $item->maritalstatus == 'single' ? 'selected' : '' }}>Single</option>
+                                                        <option value="married" {{ $item->maritalstatus == 'married' ? 'selected' : '' }}>Married</option>
+                                                        <option value="divorced" {{ $item->maritalstatus == 'divorced' ? 'selected' : '' }}>Divorced</option>
+                                                        <option value="widowed" {{ $item->maritalstatus == 'widowed' ? 'selected' : '' }}>Widowed</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </fieldset>
-
+                                    
                                         <!-- Section: Contact Information -->
                                         <fieldset class="border p-3 mb-4">
                                             <legend class="w-auto px-2">Contact Information</legend>
-
+                                    
                                             <div class="mb-3">
-                                            <label for="address" class="form-label">Residential Address</label>
-                                            <input type="text" class="form-control" id="address" name="address">
+                                                <label for="address" class="form-label">Residential Address</label>
+                                                <input type="text" class="form-control" id="address" name="address" value="{{ $item->address ?? '' }}">
                                             </div>
-
+                                    
                                             <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="phone" class="form-label">Mobile Number</label>
-                                                <input type="tel" class="form-control" id="phone" name="phone">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="emergencyContact" class="form-label">Emergency Contact</label>
-                                                <input type="text" class="form-control" id="emergencyContact" name="emergencycontact">
-                                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="phone" class="form-label">Mobile Number</label>
+                                                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ $item->phone ?? '' }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="emergencyContact" class="form-label">Emergency Contact</label>
+                                                    <input type="text" class="form-control" id="emergencyContact" name="emergencycontact" value="{{ $item->emergencycontact ?? '' }}">
+                                                </div>
                                             </div>
                                         </fieldset>
-
+                                    
                                         <!-- Section: Employment Details -->
                                         <fieldset class="border p-3 mb-4">
                                             <legend class="w-auto px-2">Employment Details</legend>
-
+                                    
                                             <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <label for="employeeId" class="form-label">Employee ID / Staff Number</label>
-                                                <input type="text" class="form-control" id="employeeId" name="employeeid">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="jobTitle" class="form-label">Job Title / Designation</label>
-                                                <input type="text" class="form-control" id="jobTitle" name="jobtitle">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="department" class="form-label">Department / Team</label>
-                                                <input type="text" class="form-control" id="department" name="department">
-                                            </div>
+                                                <div class="col-md-4">
+                                                    <label for="employeeId" class="form-label">Employee ID / Staff Number</label>
+                                                    <input type="text" class="form-control" id="employeeId" name="employeeid" value="{{ $item->employeeid ?? '' }}">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="jobTitle" class="form-label">Job Title / Designation</label>
+                                                    <input type="text" class="form-control" id="jobTitle" name="jobtitle" value="{{ $item->jobtitle ?? '' }}">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="department" class="form-label">Department / Team</label>
+                                                    <input type="text" class="form-control" id="department" name="department" value="{{ $item->department ?? '' }}">
+                                                </div>
                                             </div>
                                         </fieldset>
-
+                                    
                                         <!-- Section: Benefits & Insurance -->
                                         <fieldset class="border p-3 mb-4">
                                             <legend class="w-auto px-2">Benefits & Insurance</legend>
-
+                                    
                                             <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <label for="sss" class="form-label">Social Security Number</label>
-                                                <input type="text" class="form-control" id="sss" name="sss">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="pagibig" class="form-label">Pag-IBIG Member ID</label>
-                                                <input type="text" class="form-control" id="pagibig" name="pagibig">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="philhealth" class="form-label">Philhealth ID</label>
-                                                <input type="text" class="form-control" id="philhealth" name="philhealth">
-                                            </div>
+                                                <div class="col-md-4">
+                                                    <label for="sss" class="form-label">Social Security Number</label>
+                                                    <input type="text" class="form-control" id="sss" name="sss" value="{{ $item->sss ?? '' }}">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="pagibig" class="form-label">Pag-IBIG Member ID</label>
+                                                    <input type="text" class="form-control" id="pagibig" name="pagibig" value="{{ $item->pagibig ?? '' }}">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="philhealth" class="form-label">Philhealth ID</label>
+                                                    <input type="text" class="form-control" id="philhealth" name="philhealth" value="{{ $item->philhealth ?? '' }}">
+                                                </div>
                                             </div>
                                         </fieldset>
-
+                                    
+                                        @csrf
+                                    
                                         <div class="text-end">
                                             <button type="submit" class="btn btn-primary">Submit</button>
                                         </div>
                                     </form>
+                                    
 
                                 </div>
                                 <div class="modal-footer">

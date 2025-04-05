@@ -133,6 +133,8 @@ Route::middleware([
         return view('notifications');
     });
 
+    Route::post('/update-employee-profile/{userId}', [TechniciansController::class, 'updateEmployeeProfile']);
+
     Route::get('/my-tasks-filter', function (Request $request) {
         $from = $request->input('from');
         $to = $request->input('to');

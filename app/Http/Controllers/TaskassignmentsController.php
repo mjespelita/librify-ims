@@ -129,7 +129,7 @@ class TaskassignmentsController extends Controller {
         InternalNotification::create([
             'users_senders_id' => Auth::user()->id,
             'tasks_id' => $request->tasks_id,
-            'notification' => Auth::user()->name ." (".Auth::user()->role.") assigned you on the task ".Tasks::where('id', $request->tasks_id)->value('name')
+            'notification' => Auth::user()->name ." (".Auth::user()->role.") assigned " . User::where('id', $request->users_id)->value('name') . " on the task ".Tasks::where('id', $request->tasks_id)->value('name')
         ]);
 
         /* Log ************************************************** */
@@ -246,7 +246,7 @@ class TaskassignmentsController extends Controller {
         InternalNotification::create([
             'users_senders_id' => Auth::user()->id,
             'tasks_id' => $taskId,
-            'notification' => Auth::user()->name ." (".Auth::user()->role.") removed you as assignee on the task ".Tasks::where('id', $taskId)->value('name')
+            'notification' => Auth::user()->name ." (".Auth::user()->role.") removed " . User::where('id', $userId)->value('name') . " as assignee on the task ".Tasks::where('id', $taskId)->value('name')
         ]);
 
         return back();
